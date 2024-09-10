@@ -1,4 +1,4 @@
-FROM onnx_cuda_check
+FROM chenmins/onnx_cuda_check:v2
 
 # 设置工作目录
 WORKDIR /workspace
