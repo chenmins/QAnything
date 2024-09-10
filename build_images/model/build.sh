@@ -7,7 +7,7 @@ fi
 if [ ! -L "$(pwd)/nltk_data" ]; then
     ln -s ../../nltk_data $(pwd)/nltk_data
 fi
-docker build -t qanything-linux:v1.5.0 .
-docker run --rm -it --gpus all -v $(pwd):/mnt qanything-linux:v1.5.0 ls /root/models
-docker run --rm -it --gpus all -v $(pwd):/mnt qanything-linux:v1.5.0 ls /root/nltk_data
+docker build -t chenmins/qanything-linux:v2 .
+docker run --rm -it --gpus all -v $(pwd):/mnt chenmins/qanything-linux:v2 ls /root/models
+docker run --rm -it --gpus all -v $(pwd):/mnt chenmins/qanything-linux:v2 ls /root/nltk_data
 

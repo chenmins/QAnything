@@ -8,3 +8,13 @@ if 'CUDAExecutionProvider' in available_providers:
     print("CUDAExecutionProvider is available.")
 else:
     print("CUDAExecutionProvider is not available.")
+
+import sys
+
+# 尝试导入 lzma 模块，检测是否正常
+try:
+    import lzma
+    print("lzma module is available.")
+except ImportError:
+    print("lzma module is not available. Please check your Python installation.")
+    sys.exit(1)  # 退出程序，因为没有 lzma 支持

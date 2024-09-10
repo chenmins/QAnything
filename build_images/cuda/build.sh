@@ -1,3 +1,3 @@
 #!/bin/bash
-docker build -t onnx_cuda_check .
-docker run --rm -it --gpus all -v $(pwd):/mnt onnx_cuda_check python3 /mnt/cuda_check.py
+docker build -t chenmins/onnx_cuda_check:v2 .
+docker run --rm -it --gpus all -v $(pwd):/mnt chenmins/onnx_cuda_check:v2 python3 /mnt/cuda_check.py
