@@ -4,11 +4,11 @@ services:
     image: chenmins/qanything-linux-rclone:v2
     networks:
       - shared_network
-    command: /bin/bash -c "cd /opt/Qanything && bash scripts/entrypoint.sh"
+    command: /bin/bash -c "cd /opt/QAnything && bash scripts/entrypoint.sh"
     privileged: true
     shm_size: '8gb'
     volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/:/opt/Qanything/
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/:/opt/QAnything/
     ports:
       - "18777:8777"
       - "8776:9001"
@@ -28,7 +28,7 @@ services:
       - GPUID=${GPUID:-0}
       - USER_IP=${USER_IP:-111.31.43.18}
       - Gateway_IP=${Gateway_IP:-111.31.43.18}
-      - TIKTOKEN_CACHE_DIR=/opt/Qanything/tiktoken/encodings
+      - TIKTOKEN_CACHE_DIR=/opt/QAnything/tiktoken/encodings
     tty: true
     stdin_open: true
 
