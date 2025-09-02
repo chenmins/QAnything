@@ -8,7 +8,7 @@ services:
     privileged: true
     shm_size: '8gb'
     volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/:/opt/qanything/
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/:/opt/Qanything/
     ports:
       - "18777:8777"
       - "8776:9001"
