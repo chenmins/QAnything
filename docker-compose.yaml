@@ -1,0 +1,37 @@
+services:
+  qanything_local:
+    container_name: qanything-container-local-v2
+    image: chenmins/qanything-linux-rclone:v2
+    networks:
+      - shared_network
+    command: /bin/bash -c "cd /opt/qanything && bash scripts/entrypoint.sh"
+    privileged: true
+    shm_size: '8gb'
+    volumes:
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/:/opt/qanything/
+    ports:
+      - "18777:8777"
+      - "8776:9001"
+      - "8775:9009"
+      - "8774:8001"
+      - "8773:7001"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: "all"
+              capabilities: ["gpu"]
+#    network_mode: "host"
+    environment:
+      - NCCL_LAUNCH_MODE=PARALLEL
+      - GPUID=${GPUID:-0}
+      - USER_IP=${USER_IP:-111.31.43.18}
+      - Gateway_IP=${Gateway_IP:-111.31.43.18}
+      - TIKTOKEN_CACHE_DIR=/opt/qanything/tiktoken/encodings
+    tty: true
+    stdin_open: true
+
+networks:
+  shared_network:
+    external: true
