@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# 使用 Rclone 挂载 MinIO 至 /usr/share/nginx/html
+mkdir -p /app/upload/userfiles
+chmod -R 755 /app/upload/userfiles
+ 
+
 check_log_errors() {
     local log_file=$1  # 将第一个参数赋值给变量log_file，表示日志文件的路径
 
@@ -22,7 +27,7 @@ check_log_errors() {
 
 start_time=$(date +%s)  # 记录开始时间
 
-DIR="/workspace/QAnything/logs/debug_logs"
+DIR="/opt/QAnything/logs/debug_logs"
 
 # 检查目录是否存在
 if [ ! -d "$DIR" ]; then
@@ -34,40 +39,41 @@ else
 fi
 
 # 创建软连接
-if [ ! -L "/workspace/QAnything/qanything_kernel/dependent_server/embedding_server/embedding_model_configs_v0.0.1" ]; then  # 如果不存在软连接
-  cd /workspace/QAnything/qanything_kernel/dependent_server/embedding_server && ln -s /root/models/linux_onnx/embedding_model_configs_v0.0.1 .
+if [ ! -L "/opt/QAnything/qanything_kernel/dependent_server/embedding_server/embedding_model_configs_v0.0.1" ]; then  # 如果不存在软连接
+  cd /opt/QAnything/qanything_kernel/dependent_server/embedding_server && ln -s /root/models/linux_onnx/embedding_model_configs_v0.0.1 .
 fi
 
-if [ ! -L "/workspace/QAnything/qanything_kernel/dependent_server/rerank_server/rerank_model_configs_v0.0.1" ]; then  # 如果不存在软连接
-  cd /workspace/QAnything/qanything_kernel/dependent_server/rerank_server && ln -s /root/models/linux_onnx/rerank_model_configs_v0.0.1 .
+if [ ! -L "/opt/QAnything/qanything_kernel/dependent_server/rerank_server/rerank_model_configs_v0.0.1" ]; then  # 如果不存在软连接
+  cd /opt/QAnything/qanything_kernel/dependent_server/rerank_server && ln -s /root/models/linux_onnx/rerank_model_configs_v0.0.1 .
 fi
 
-if [ ! -L "/workspace/QAnything/qanything_kernel/dependent_server/ocr_server/ocr_models" ]; then  # 如果不存在软连接
-  cd /workspace/QAnything/qanything_kernel/dependent_server/ocr_server && ln -s /root/models/ocr_models .  # 创建软连接
+if [ ! -L "/opt/QAnything/qanything_kernel/dependent_server/ocr_server/ocr_models" ]; then  # 如果不存在软连接
+  cd /opt/QAnything/qanything_kernel/dependent_server/ocr_server && ln -s /root/models/ocr_models .  # 创建软连接
 fi
 
-if [ ! -L "/workspace/QAnything/qanything_kernel/dependent_server/pdf_parser_server/pdf_to_markdown/checkpoints" ]; then  # 如果不存在软连接
-  cd /workspace/QAnything/qanything_kernel/dependent_server/pdf_parser_server/pdf_to_markdown/ && ln -s /root/models/pdf_models checkpoints  # 创建软连接
+if [ ! -L "/opt/QAnything/qanything_kernel/dependent_server/pdf_parser_server/pdf_to_markdown/checkpoints" ]; then  # 如果不存在软连接
+  cd /opt/QAnything/qanything_kernel/dependent_server/pdf_parser_server/pdf_to_markdown/ && ln -s /root/models/pdf_models checkpoints  # 创建软连接
 fi
 
-if [ ! -L "/workspace/QAnything/nltk_data" ]; then  # 如果不存在软连接
-  cd /workspace/QAnything/ && ln -s /root/nltk_data .  # 创建软连接
+if [ ! -L "/opt/QAnything/nltk_data" ]; then  # 如果不存在软连接
+  cd /opt/QAnything/ && ln -s /root/nltk_data .  # 创建软连接
 fi
 
-cd /workspace/QAnything || exit
+cd /opt/QAnything || exit
 
-echo "embedding和rerank服务将在CPU上运行"
-nohup python3 -u qanything_kernel/dependent_server/rerank_server/rerank_server.py > /workspace/QAnything/logs/debug_logs/rerank_server.log 2>&1 &
+
+echo "embedding和rerank服务将在 $GPUID 号GPU上运行"
+nohup python3 -u qanything_kernel/dependent_server/rerank_server/rerank_server.py --use_gpu > /opt/QAnything/logs/debug_logs/2-rerank_server.log 2>&1 &
 PID1=$!
-nohup python3 -u qanything_kernel/dependent_server/embedding_server/embedding_server.py > /workspace/QAnything/logs/debug_logs/embedding_server.log 2>&1 &
+nohup python3 -u qanything_kernel/dependent_server/embedding_server/embedding_server.py --use_gpu > /opt/QAnything/logs/debug_logs/1-embedding_server.log 2>&1 &
 PID2=$!
-nohup python3 -u qanything_kernel/dependent_server/pdf_parser_server/pdf_parser_server.py > /workspace/QAnything/logs/debug_logs/pdf_parser_server.log 2>&1 &
+nohup python3 -u qanything_kernel/dependent_server/pdf_parser_server/pdf_parser_server.py --use_gpu> /opt/QAnything/logs/debug_logs/4-pdf_parser_server.log 2>&1 &
 PID3=$!
-nohup python3 -u qanything_kernel/dependent_server/ocr_server/ocr_server.py > /workspace/QAnything/logs/debug_logs/ocr_server.log 2>&1 &
+nohup python3 -u qanything_kernel/dependent_server/ocr_server/ocr_server.py  --use_gpu > /opt/QAnything/logs/debug_logs/3-ocr_server.log 2>&1 &
 PID4=$!
-nohup python3 -u qanything_kernel/dependent_server/insert_files_serve/insert_files_server.py --port 8110 --workers 1 > /workspace/QAnything/logs/debug_logs/insert_files_server.log 2>&1 &
+nohup python3 -u qanything_kernel/dependent_server/insert_files_serve/insert_files_server.py --port 8110 --workers 1 > /opt/QAnything/logs/debug_logs/5-insert_files_server.log 2>&1 &
 PID5=$!
-nohup python3 -u qanything_kernel/qanything_server/sanic_api.py --host $USER_IP --port 8777 --workers 1 > /workspace/QAnything/logs/debug_logs/main_server.log 2>&1 &
+nohup python3 -u qanything_kernel/qanything_server/sanic_api.py --host 111.31.43.18 --port 8777 --workers 1 > /opt/QAnything/logs/debug_logs/main_server.log 2>&1 &
 PID6=$!
 # 生成close.sh脚本，写入kill命令
 echo "#!/bin/bash" > close.sh
@@ -79,7 +85,7 @@ chmod +x close.sh
 # 监听后端服务启动
 backend_start_time=$(date +%s)
 
-while ! grep -q "Starting worker" /workspace/QAnything/logs/debug_logs/main_server.log; do
+while ! grep -q "Starting worker" /opt/QAnything/logs/debug_logs/main_server.log; do
     echo "Waiting for the backend service to start..."
     echo "等待启动后端服务"
     sleep 1
@@ -90,8 +96,8 @@ while ! grep -q "Starting worker" /workspace/QAnything/logs/debug_logs/main_serv
 
     # 检查是否超时
     if [ $elapsed_time -ge 180 ]; then
-        echo "启动后端服务超时，自动检查日志文件 /workspace/QAnything/logs/debug_logs/main_server.log："
-        check_log_errors /workspace/QAnything/logs/debug_logs/main_server.log
+        echo "启动后端服务超时，自动检查日志文件 /opt/QAnything/logs/debug_logs/main_server.log："
+        check_log_errors /opt/QAnything/logs/debug_logs/main_server.log
         exit 1
     fi
     sleep 5
