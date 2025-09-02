@@ -120,13 +120,13 @@ class KnowledgeBaseManager:
         self.execute_query_(query, (), commit=True)
         query = """
             CREATE TABLE IF NOT EXISTS KnowledgeBase (
-                id INT AUTO_INCREMENT PRIMARY KEY, 
+                id INT AUTO_INCREMENT PRIMARY KEY,
                 kb_id VARCHAR(255) UNIQUE,
                 user_id VARCHAR(255),
                 kb_name VARCHAR(255),
                 deleted BOOL DEFAULT 0,
                 latest_qa_time TIMESTAMP,
-                latest_insert_time TIMESTAMP 
+                latest_insert_time TIMESTAMP
             );
 
         """
@@ -166,9 +166,9 @@ class KnowledgeBaseManager:
                 faq_id  VARCHAR(255) UNIQUE,
                 user_id VARCHAR(255) NOT NULL,
                 kb_id VARCHAR(255) NOT NULL,
-                question VARCHAR(512) NOT NULL, 
-                answer VARCHAR(2048) NOT NULL, 
-                nos_keys VARCHAR(768) 
+                question VARCHAR(512) NOT NULL,
+                answer VARCHAR(2048) NOT NULL,
+                nos_keys VARCHAR(768)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """
         self.execute_query_(query, (), commit=True)
@@ -228,7 +228,7 @@ class KnowledgeBaseManager:
                 user_id VARCHAR(255) NOT NULL,
                 kb_id VARCHAR(255) NOT NULL,
                 nos_key VARCHAR(255) NOT NULL,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """
         self.execute_query_(query, (), commit=True)
@@ -241,13 +241,13 @@ class KnowledgeBaseManager:
                 bot_name        VARCHAR(512),
                 description     VARCHAR(512),
                 head_image      VARCHAR(512),
-                prompt_setting  LONGTEXT,
-                welcome_message LONGTEXT,
-                model           VARCHAR(100),
+                prompt_setting  MEDIUMTEXT,
+                welcome_message MEDIUMTEXT,
                 kb_ids_str      VARCHAR(1024),
                 deleted         INT DEFAULT 0,
                 create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                update_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                update_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                llm_setting     VARCHAR(512) DEFAULT '{}'
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
         """
         self.execute_query_(query, (), commit=True)
@@ -258,7 +258,10 @@ class KnowledgeBaseManager:
             "CREATE INDEX idx_user_id_status ON File (user_id, status)",
             "CREATE INDEX index_bot_id ON QaLogs (bot_id)",
             "CREATE INDEX index_query ON QaLogs (query)",
-            "CREATE INDEX index_timestamp ON QaLogs (timestamp)"
+            "CREATE INDEX index_timestamp ON QaLogs (timestamp)",
+            # 如果没有的话，给QanythingBot添加一列：llm_setting VARCHAR(512)
+            "ALTER TABLE QanythingBot ADD COLUMN llm_setting VARCHAR(512) DEFAULT '{}'",
+            "ALTER TABLE QanythingBot DROP COLUMN model",
         ]
 
         for query in index_queries:
@@ -268,6 +271,10 @@ class KnowledgeBaseManager:
             except mysql.connector.Error as err:
                 if err.errno == 1061:  # 重复键错误
                     debug_logger.info(f"Index already exists (this is okay): {query}")
+                elif err.errno == 1060:  # 已存在的列无需创建
+                    debug_logger.info(f"Column already exists (this is okay): {query}")
+                elif err.errno == 1091:  # 已经删除的列无需删除
+                    debug_logger.info(f"Column already deleted (this is okay): {query}")
                 else:
                     debug_logger.error(f"Error creating index: {err}")
 
@@ -336,10 +343,10 @@ class KnowledgeBaseManager:
             return []
 
         file_ids_str = ','.join("'{}'".format(str(x)) for x in file_ids)
-        query = """SELECT file_id, status FROM File 
+        query = """SELECT file_id, status FROM File
                  WHERE deleted = 0
                  AND file_id IN ({})
-                 AND kb_id = %s 
+                 AND kb_id = %s
                  AND kb_id IN (SELECT kb_id FROM KnowledgeBase WHERE user_id = %s)""".format(file_ids_str)
         result = self.execute_query_(query, (kb_id, user_id), fetch=True)
         debug_logger.info("check_file_exist {}".format(result))
@@ -356,10 +363,10 @@ class KnowledgeBaseManager:
             # 创建参数化的查询，用%s作为占位符
             placeholders = ','.join(['%s'] * len(batch_file_names))
             query = """
-                SELECT file_id, file_name, file_size, status FROM File 
+                SELECT file_id, file_name, file_size, status FROM File
                 WHERE deleted = 0
                 AND file_name IN ({})
-                AND kb_id = %s 
+                AND kb_id = %s
                 AND kb_id IN (SELECT kb_id FROM KnowledgeBase WHERE user_id = %s)
             """.format(placeholders)
 
@@ -373,7 +380,7 @@ class KnowledgeBaseManager:
 
     # 对外接口不需要增加用户，新建知识库的时候增加用户就可以了
     def add_user_(self, user_id, user_name):
-        query = "INSERT IGNORE INTO User (user_id, user_name) VALUES (%s, %s, %s)"
+        query = "INSERT IGNORE INTO User (user_id, user_name) VALUES (%s, %s)"
         self.execute_query_(query, (user_id, user_name), commit=True)
         debug_logger.info(f"Add user: {user_id} {user_name}")
 
@@ -504,12 +511,12 @@ class KnowledgeBaseManager:
     def get_total_status_by_date(self, user_id):
         # 查询指定用户上传的文件数量，按日期和状态分组
         query = """
-        SELECT 
+        SELECT
             LEFT(timestamp, 8) as date,  -- 提取前8个字符作为日期 (YYYYMMDD)
-            status, 
-            COUNT(*) as number 
-        FROM File 
-        WHERE user_id = %s 
+            status,
+            COUNT(*) as number
+        FROM File
+        WHERE user_id = %s
         GROUP BY LEFT(timestamp, 8), status
         """
         result = self.execute_query_(query, (user_id,), fetch=True)
@@ -835,10 +842,10 @@ class KnowledgeBaseManager:
         return result is not None and len(result) > 0
 
     def new_qanything_bot(self, bot_id, user_id, bot_name, description, head_image, prompt_setting, welcome_message,
-                          model, kb_ids_str):
-        query = "INSERT INTO QanythingBot (bot_id, user_id, bot_name, description, head_image, prompt_setting, welcome_message, model, kb_ids_str) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                          kb_ids_str):
+        query = "INSERT INTO QanythingBot (bot_id, user_id, bot_name, description, head_image, prompt_setting, welcome_message, kb_ids_str) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
         self.execute_query_(query, (
-        bot_id, user_id, bot_name, description, head_image, prompt_setting, welcome_message, model, kb_ids_str),
+        bot_id, user_id, bot_name, description, head_image, prompt_setting, welcome_message, kb_ids_str),
                             commit=True)
         return bot_id, "success"
 
@@ -849,20 +856,21 @@ class KnowledgeBaseManager:
 
     def get_bot(self, user_id, bot_id):
         if not bot_id:
-            query = "SELECT bot_id, bot_name, description, head_image, prompt_setting, welcome_message, model, kb_ids_str, update_time, user_id FROM QanythingBot WHERE user_id = %s AND deleted = 0"
+            query = "SELECT bot_id, bot_name, description, head_image, prompt_setting, welcome_message, kb_ids_str, update_time, user_id, llm_setting FROM QanythingBot WHERE user_id = %s AND deleted = 0"
             return self.execute_query_(query, (user_id,), fetch=True)
         elif not user_id:
-            query = "SELECT bot_id, bot_name, description, head_image, prompt_setting, welcome_message, model, kb_ids_str, update_time, user_id FROM QanythingBot WHERE bot_id = %s AND deleted = 0"
+            query = "SELECT bot_id, bot_name, description, head_image, prompt_setting, welcome_message, kb_ids_str, update_time, user_id, llm_setting FROM QanythingBot WHERE bot_id = %s AND deleted = 0"
             return self.execute_query_(query, (bot_id,), fetch=True)
         else:
-            query = "SELECT bot_id, bot_name, description, head_image, prompt_setting, welcome_message, model, kb_ids_str, update_time, user_id FROM QanythingBot WHERE user_id = %s AND bot_id = %s AND deleted = 0"
+            query = "SELECT bot_id, bot_name, description, head_image, prompt_setting, welcome_message, kb_ids_str, update_time, user_id, llm_setting FROM QanythingBot WHERE user_id = %s AND bot_id = %s AND deleted = 0"
             return self.execute_query_(query, (user_id, bot_id), fetch=True)
 
-    def update_bot(self, user_id, bot_id, bot_name, description, head_image, prompt_setting, welcome_message, model,
-                   kb_ids_str, update_time):
-        query = "UPDATE QanythingBot SET bot_name = %s, description = %s, head_image = %s, prompt_setting = %s, welcome_message = %s, model = %s, kb_ids_str = %s, update_time = %s WHERE user_id = %s AND bot_id = %s AND deleted = 0"
+    def update_bot(self, user_id, bot_id, bot_name, description, head_image, prompt_setting, welcome_message,
+                   kb_ids_str, update_time, llm_setting):
+        llm_setting = json.dumps(llm_setting, ensure_ascii=False)
+        query = "UPDATE QanythingBot SET bot_name = %s, description = %s, head_image = %s, prompt_setting = %s, welcome_message = %s, kb_ids_str = %s, update_time = %s, llm_setting = %s WHERE user_id = %s AND bot_id = %s AND deleted = 0"
         self.execute_query_(query, (
-        bot_name, description, head_image, prompt_setting, welcome_message, model, kb_ids_str, update_time, user_id,
+        bot_name, description, head_image, prompt_setting, welcome_message, kb_ids_str, update_time, llm_setting, user_id,
         bot_id), commit=True)
 
     def get_files_by_status(self, status):

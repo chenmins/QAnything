@@ -1,6 +1,6 @@
 from qanything_kernel.configs.model_config import VECTOR_SEARCH_TOP_K, VECTOR_SEARCH_SCORE_THRESHOLD, \
     PROMPT_TEMPLATE, STREAMING, SYSTEM, INSTRUCTIONS, SIMPLE_PROMPT_TEMPLATE, CUSTOM_PROMPT_TEMPLATE, \
-    LOCAL_RERANK_MODEL_NAME, LOCAL_EMBED_MAX_LENGTH
+    LOCAL_RERANK_MODEL_NAME, LOCAL_EMBED_MAX_LENGTH, SEPARATORS
 from typing import List, Tuple, Union, Dict
 import time
 from scipy.spatial import cKDTree
@@ -80,7 +80,10 @@ class LocalDocQA:
         web_content, web_documents = duckduckgo_search(query, top_k)
         source_documents = []
         for idx, doc in enumerate(web_documents):
+            if 'title' not in doc.metadata:
+                continue
             doc.metadata['retrieval_query'] = query  # 添加查询到文档的元数据中
+            debug_logger.info(f"web search doc: {doc.metadata}")
             file_name = re.sub(r'[\uFF01-\uFF5E\u3000-\u303F]', '', doc.metadata['title'])
             doc.metadata['file_name'] = file_name + '.web'
             doc.metadata['file_url'] = doc.metadata['source']
@@ -88,10 +91,10 @@ class LocalDocQA:
             doc.metadata['score'] = 1 - (idx / len(web_documents))
             doc.metadata['file_id'] = 'websearch' + str(idx)
             doc.metadata['headers'] = {"新闻标题": file_name}
-            source_documents.append(doc)
             if 'description' in doc.metadata:
                 desc_doc = Document(page_content=doc.metadata['description'], metadata=doc.metadata)
                 source_documents.append(desc_doc)
+            source_documents.append(doc)  # 先插入description，再插入原文
         return web_content, source_documents
 
     def web_page_search(self, query, top_k=None):
@@ -129,6 +132,7 @@ class LocalDocQA:
             if 'score' not in doc.metadata:
                 doc.metadata['score'] = 1 - (idx / len(query_docs))  # TODO 这个score怎么获取呢
             source_documents.append(doc)
+        debug_logger.info(f"embed scores: {[doc.metadata['score'] for doc in source_documents]}")
         # if cosine_thresh:
         #     source_documents = [item for item in source_documents if float(item.metadata['score']) > cosine_thresh]
 
@@ -137,14 +141,14 @@ class LocalDocQA:
     def reprocess_source_documents(self, custom_llm: OpenAILLM, query: str,
                                    source_docs: List[Document],
                                    history: List[str],
-                                   prompt_template: str) -> Tuple[List[Document], int]:
+                                   prompt_template: str) -> Tuple[List[Document], int, str]:
         # 组装prompt,根据max_token
-        query_token_num = custom_llm.num_tokens_from_messages([query]) * 4
-        history_token_num = custom_llm.num_tokens_from_messages([x for sublist in history for x in sublist])
-        template_token_num = custom_llm.num_tokens_from_messages([prompt_template])
+        query_token_num = int(custom_llm.num_tokens_from_messages([query]) * 4)
+        history_token_num = int(custom_llm.num_tokens_from_messages([x for sublist in history for x in sublist]))
+        template_token_num = int(custom_llm.num_tokens_from_messages([prompt_template]))
 
-        reference_field_token_num = custom_llm.num_tokens_from_messages(
-            [f"<reference>[{idx + 1}]</reference>" for idx in range(len(source_docs))])
+        reference_field_token_num = int(custom_llm.num_tokens_from_messages(
+            [f"<reference>[{idx + 1}]</reference>" for idx in range(len(source_docs))]))
         limited_token_nums = custom_llm.token_window - custom_llm.max_token - custom_llm.offcut_token - query_token_num - history_token_num - template_token_num - reference_field_token_num
 
         debug_logger.info(f"=============================================")
@@ -157,6 +161,16 @@ class LocalDocQA:
         debug_logger.info(f"query token nums: {query_token_num}")
         debug_logger.info(f"history token nums: {history_token_num}")
         debug_logger.info(f"=============================================")
+
+        tokens_msg = """
+        token_window = {custom_llm.token_window}, max_token = {custom_llm.max_token},       
+        offcut_token = {custom_llm.offcut_token}, docs_available_token_nums: {limited_token_nums}, 
+        template token nums: {template_token_num}, reference_field token nums: {reference_field_token_num}, 
+        query token nums: {query_token_num}, history token nums: {history_token_num}
+        docs_available_token_nums = token_window - max_token - offcut_token - query_token_num * 4 - history_token_num - template_token_num - reference_field_token_num
+        """.format(custom_llm=custom_llm, limited_token_nums=limited_token_nums, template_token_num=template_token_num,
+                     reference_field_token_num=reference_field_token_num, query_token_num=query_token_num // 4,
+                     history_token_num=history_token_num)
 
         # if limited_token_nums < 200:
         #     return []
@@ -184,7 +198,7 @@ class LocalDocQA:
                 break
 
         debug_logger.info(f"new_source_docs token nums: {custom_llm.num_tokens_from_docs(new_source_docs)}")
-        return new_source_docs, limited_token_nums
+        return new_source_docs, limited_token_nums, tokens_msg
 
     def generate_prompt(self, query, source_docs, prompt_template):
         if source_docs:
@@ -242,7 +256,7 @@ class LocalDocQA:
                 debug_logger.info(f"use rerank, rerank docs num: {len(docs)}")
                 docs = await self.rerank.arerank_documents(query, docs)
                 if len(docs) > 1:
-                    docs = [doc for doc in docs if float(doc.metadata['score']) >= 0.28]
+                    docs = [doc for doc in docs if doc.metadata['score'] >= 0.28]
                 return docs
             except Exception as e:
                 debug_logger.error(f"query tokens: {num_tokens_rerank(query)}, rerank error: {e}")
@@ -258,40 +272,29 @@ class LocalDocQA:
                 doc.metadata['score'] = cosine_similarity(embed1, embed2)
             return docs
 
-    async def prepare_source_documents(self, query: str, custom_llm: OpenAILLM, source_documents: List[Document],
-                                       chat_history: List[str], prompt_template: str,
-                                       need_web_search: bool = False):
-        # 删除文档中的图片
-        # for doc in source_documents:
-        #     doc.page_content = re.sub(r'!\[figure]\(.*?\)', '', doc.page_content)
-
-        retrieval_documents, limited_token_nums = self.reprocess_source_documents(custom_llm=custom_llm, query=query,
-                                                                                  source_docs=source_documents,
-                                                                                  history=chat_history,
-                                                                                  prompt_template=prompt_template)
+    async def prepare_source_documents(self, custom_llm: OpenAILLM, retrieval_documents: List[Document],
+                                       limited_token_nums: int, rerank: bool):
+        return retrieval_documents, retrieval_documents
         debug_logger.info(f"retrieval_documents len: {len(retrieval_documents)}")
-        if not need_web_search:
-            try:
-                new_docs = self.aggregate_documents(retrieval_documents, limited_token_nums, custom_llm)
-                if new_docs:
-                    source_documents = new_docs
-                else:
-                    # 合并所有候选文档，从前往后，所有file_id相同的文档合并，按照doc_id排序
-                    merged_documents_file_ids = []
-                    for doc in retrieval_documents:
-                        if doc.metadata['file_id'] not in merged_documents_file_ids:
-                            merged_documents_file_ids.append(doc.metadata['file_id'])
-                    source_documents = []
-                    for file_id in merged_documents_file_ids:
-                        docs = [doc for doc in retrieval_documents if doc.metadata['file_id'] == file_id]
-                        docs = sorted(docs, key=lambda x: int(x.metadata['doc_id'].split('_')[-1]))
-                        source_documents.extend(docs)
+        try:
+            new_docs = self.aggregate_documents(retrieval_documents, limited_token_nums, custom_llm, rerank)
+            if new_docs:
+                source_documents = new_docs
+            else:
+                # 合并所有候选文档，从前往后，所有file_id相同的文档合并，按照doc_id排序
+                merged_documents_file_ids = []
+                for doc in retrieval_documents:
+                    if doc.metadata['file_id'] not in merged_documents_file_ids:
+                        merged_documents_file_ids.append(doc.metadata['file_id'])
+                source_documents = []
+                for file_id in merged_documents_file_ids:
+                    docs = [doc for doc in retrieval_documents if doc.metadata['file_id'] == file_id]
+                    docs = sorted(docs, key=lambda x: int(x.metadata['doc_id'].split('_')[-1]))
+                    source_documents.extend(docs)
 
-                # source_documents = self.incomplete_table(source_documents, limited_token_nums, custom_llm)
-            except Exception as e:
-                debug_logger.error(f"aggregate_documents error w/ {e}: {traceback.format_exc()}")
-                source_documents = retrieval_documents
-        else:
+            # source_documents = self.incomplete_table(source_documents, limited_token_nums, custom_llm)
+        except Exception as e:
+            debug_logger.error(f"aggregate_documents error w/ {e}: {traceback.format_exc()}")
             source_documents = retrieval_documents
 
         debug_logger.info(f"source_documents len: {len(source_documents)}")
@@ -361,6 +364,51 @@ class LocalDocQA:
         relevant_docs.sort(key=lambda x: x['combined_score'], reverse=True)
 
         return relevant_docs
+
+    @staticmethod
+    async def generate_response(query, res, condense_question, source_documents, time_record, chat_history, streaming, prompt):
+        """
+        生成response并使用yield返回。
+
+        :param query: 用户的原始查询
+        :param res: 生成的答案
+        :param condense_question: 压缩后的问题
+        :param source_documents: 从检索中获取的文档
+        :param time_record: 记录时间的字典
+        :param chat_history: 聊天历史
+        :param streaming: 是否启用流式输出
+        :param prompt: 生成response时的prompt类型
+        """
+        history = chat_history + [[query, res]]
+
+        if streaming:
+            res = 'data: ' + json.dumps({'answer': res}, ensure_ascii=False)
+
+        response = {
+            "query": query,
+            "prompt": prompt,  # 允许自定义 prompt
+            "result": res,
+            "condense_question": condense_question,
+            "retrieval_documents": source_documents,
+            "source_documents": source_documents
+        }
+
+        if 'llm_completed' not in time_record:
+            time_record['llm_completed'] = 0.0
+        if 'total_tokens' not in time_record:
+            time_record['total_tokens'] = 0
+        if 'prompt_tokens' not in time_record:
+            time_record['prompt_tokens'] = 0
+        if 'completion_tokens' not in time_record:
+            time_record['completion_tokens'] = 0
+
+        # 使用yield返回response和history
+        yield response, history
+
+        # 如果是流式输出，发送结束标志
+        if streaming:
+            response['result'] = "data: [DONE]\n\n"
+            yield response, history
 
     async def get_knowledge_based_answer(self, model, max_token, kb_ids, query, retriever, custom_prompt, time_record,
                                          temperature, api_base, api_key, api_context_length, top_p, top_k, web_chunk_size,
@@ -432,15 +480,39 @@ class LocalDocQA:
             t1 = time.perf_counter()
             web_search_results = self.web_page_search(query, top_k=3)
             web_splitter = RecursiveCharacterTextSplitter(
-                separators=["\n\n", "\n", "。", "!", "！", "?", "？", "；", ";", "……", "…", "、", "，", ",", " ", ""],
+                separators=SEPARATORS,
                 chunk_size=web_chunk_size,
                 chunk_overlap=int(web_chunk_size / 4),
                 length_function=num_tokens_embed,
             )
             web_search_results = web_splitter.split_documents(web_search_results)
+
+            current_doc_id = 0
+            current_file_id = web_search_results[0].metadata['file_id']
+            for doc in web_search_results:
+                if doc.metadata['file_id'] == current_file_id:
+                    doc.metadata['doc_id'] = current_file_id + '_' + str(current_doc_id)
+                    current_doc_id += 1
+                else:
+                    current_file_id = doc.metadata['file_id']
+                    current_doc_id = 0
+                    doc.metadata['doc_id'] = current_file_id + '_' + str(current_doc_id)
+                    current_doc_id += 1
+                doc_json = doc.to_json()
+                if doc_json['kwargs'].get('metadata') is None:
+                    doc_json['kwargs']['metadata'] = doc.metadata
+                self.milvus_summary.add_document(doc_id=doc.metadata['doc_id'], json_data=doc_json)
+
             t2 = time.perf_counter()
             time_record['web_search'] = round(t2 - t1, 2)
             source_documents += web_search_results
+
+        # if kb_ids and not source_documents:
+        #     res = "数据库检索失败，请检查logs/debug_logs/debug.log日志！"
+        #     async for response, history in self.generate_response(query, res, condense_question, source_documents,
+        #                                                           time_record, chat_history, streaming,'NO_DOCUMENTS'):
+        #         yield response, history
+        #     return
 
         source_documents = deduplicate_documents(source_documents)
         if rerank and len(source_documents) > 1 and num_tokens_rerank(query) <= 300:
@@ -451,18 +523,35 @@ class LocalDocQA:
                 t2 = time.perf_counter()
                 time_record['rerank'] = round(t2 - t1, 2)
                 # 过滤掉低分的文档
+                debug_logger.info(f"rerank step1 num: {len(source_documents)}")
+                debug_logger.info(f"rerank step1 scores: {[doc.metadata['score'] for doc in source_documents]}")
                 if len(source_documents) > 1:
-                    source_documents = [doc for doc in source_documents if float(doc.metadata['score']) >= 0.28]
+                    if filtered_documents := [doc for doc in source_documents if doc.metadata['score'] >= 0.28]:
+                        source_documents = filtered_documents
+                    debug_logger.info(f"rerank step2 num: {len(source_documents)}")
+                    saved_docs = [source_documents[0]]
+                    for doc in source_documents[1:]:
+                        debug_logger.info(f"rerank doc score: {doc.metadata['score']}")
+                        relative_difference = (saved_docs[0].metadata['score'] - doc.metadata['score']) / saved_docs[0].metadata['score']
+                        if relative_difference > 0.5:
+                            break
+                        else:
+                            saved_docs.append(doc)
+                    source_documents = saved_docs
+                    debug_logger.info(f"rerank step3 num: {len(source_documents)}")
             except Exception as e:
                 time_record['rerank'] = 0.0
                 debug_logger.error(f"query {query}: kb_ids: {kb_ids}, rerank error: {traceback.format_exc()}")
+
+        # es检索+milvus检索结果最多可能是2k
+        source_documents = source_documents[:top_k]
 
         # rerank之后删除headers，只保留文本内容，用于后续处理
         for doc in source_documents:
             doc.page_content = re.sub(r'^\[headers]\(.*?\)\n', '', doc.page_content)
 
         high_score_faq_documents = [doc for doc in source_documents if
-                                    doc.metadata['file_name'].endswith('.faq') and float(doc.metadata['score'] >= 0.9)]
+                                    doc.metadata['file_name'].endswith('.faq') and doc.metadata['score'] >= 0.9]
         if high_score_faq_documents:
             source_documents = high_score_faq_documents
         # FAQ完全匹配处理逻辑
@@ -474,34 +563,19 @@ class LocalDocQA:
                     yield source_documents, None
                     return
                 res = doc.metadata['faq_dict']['answer']
-                history = chat_history + [[query, res]]
-                if streaming:
-                    res = 'data: ' + json.dumps({'answer': res}, ensure_ascii=False)
-                response = {"query": query,
-                            "prompt": 'MATCH_FAQ',
-                            "result": res,
-                            "condense_question": condense_question,
-                            "retrieval_documents": source_documents,
-                            "source_documents": source_documents}
-                time_record['llm_completed'] = 0.0
-                time_record['total_tokens'] = 0
-                time_record['prompt_tokens'] = 0
-                time_record['completion_tokens'] = 0
-                yield response, history
-                if streaming:
-                    response['result'] = "data: [DONE]\n\n"
+                async for response, history in self.generate_response(query, res, condense_question, source_documents,
+                                                                      time_record, chat_history, streaming, 'MATCH_FAQ'):
                     yield response, history
-                # 退出函数
                 return
 
-        # es检索+milvus检索结果最多可能是2k
-        source_documents = source_documents[:top_k]
         # 获取今日日期
         today = time.strftime("%Y-%m-%d", time.localtime())
         # 获取当前时间
         now = time.strftime("%H:%M:%S", time.localtime())
 
-        t1 = time.perf_counter()
+        extra_msg = None
+        total_images_number = 0
+        retrieval_documents = []
         if source_documents:
             if custom_prompt:
                 # escaped_custom_prompt = custom_prompt.replace('{', '{{').replace('}', '}}')
@@ -513,6 +587,47 @@ class LocalDocQA:
                 # prompt_template = PROMPT_TEMPLATE.format(system=system_prompt, instructions=INSTRUCTIONS)
                 prompt_template = PROMPT_TEMPLATE.replace("{{system}}", system_prompt).replace("{{instructions}}",
                                                                                                INSTRUCTIONS)
+
+            t1 = time.perf_counter()
+            retrieval_documents, limited_token_nums, tokens_msg = self.reprocess_source_documents(custom_llm=custom_llm,
+                                                                                                  query=query,
+                                                                                                  source_docs=source_documents,
+                                                                                                  history=chat_history,
+                                                                                                  prompt_template=prompt_template)
+
+            if len(retrieval_documents) < len(source_documents):
+                # 重新处理后文档数量减少，说明由于tokens不足而被裁切
+                if len(retrieval_documents) == 0:  # 说明被裁切后文档数量为0
+                    debug_logger.error(f"limited_token_nums: {limited_token_nums} < {web_chunk_size}!")
+                    res = (
+                        f"抱歉，由于留给相关文档使用的token数量不足(docs_available_token_nums: {limited_token_nums} < 文本分片大小: {web_chunk_size})，"
+                        f"\n无法保证回答质量，请在模型配置中提高【总Token数量】或减少【输出Tokens数量】或减少【上下文消息数量】再继续提问。"
+                        f"\n计算方式：{tokens_msg}")
+                    async for response, history in self.generate_response(query, res, condense_question, source_documents,
+                                                                          time_record, chat_history, streaming,
+                                                                          'TOKENS_NOT_ENOUGH'):
+                        yield response, history
+                    return
+
+                extra_msg = (
+                    f"\n\nWARNING: 由于留给相关文档使用的token数量不足(docs_available_token_nums: {limited_token_nums})，"
+                    f"\n检索到的部分文档chunk被裁切，原始来源数量：{len(source_documents)}，裁切后数量：{len(retrieval_documents)}，"
+                    f"\n可能会影响回答质量，尤其是问题涉及的相关内容较多时。"
+                    f"\n可在模型配置中提高【总Token数量】或减少【输出Tokens数量】或减少【上下文消息数量】再继续提问。\n")
+
+            source_documents, retrieval_documents = await self.prepare_source_documents(custom_llm,
+                                                                                        retrieval_documents,
+                                                                                        limited_token_nums,
+                                                                                        rerank)
+
+            for doc in source_documents:
+                if doc.metadata.get('images', []):
+                    total_images_number += len(doc.metadata['images'])
+                    doc.page_content = replace_image_references(doc.page_content, doc.metadata['file_id'])
+            debug_logger.info(f"total_images_number: {total_images_number}")
+
+            t2 = time.perf_counter()
+            time_record['reprocess'] = round(t2 - t1, 2)
         else:
             if custom_prompt:
                 # escaped_custom_prompt = custom_prompt.replace('{', '{{').replace('}', '}}')
@@ -527,27 +642,8 @@ class LocalDocQA:
                 prompt_template = SIMPLE_PROMPT_TEMPLATE.replace("{{today}}", today).replace("{{now}}", now).replace(
                     "{{custom_prompt}}", simple_custom_prompt)
 
-        # source_documents_for_show = copy.deepcopy(source_documents)
-        # total_images_number = 0
-        # for doc in source_documents_for_show:
-        #     if 'images' in doc.metadata:
-        #         total_images_number += len(doc.metadata['images'])
-        #     doc.page_content = replace_image_references(doc.page_content, doc.metadata['file_id'])
-        # debug_logger.info(f"total_images_number: {total_images_number}")
-        source_documents, retrieval_documents = await self.prepare_source_documents(query, custom_llm, source_documents,
-                                                                                    chat_history,
-                                                                                    prompt_template,
-                                                                                    need_web_search)
 
-        total_images_number = 0
-        for doc in source_documents:
-            if doc.metadata.get('images', []):
-                total_images_number += len(doc.metadata['images'])
-                doc.page_content = replace_image_references(doc.page_content, doc.metadata['file_id'])
-        debug_logger.info(f"total_images_number: {total_images_number}")
 
-        t2 = time.perf_counter()
-        time_record['reprocess'] = round(t2 - t1, 2)
         if only_need_search_results:
             yield source_documents, None
             return
@@ -586,6 +682,14 @@ class LocalDocQA:
                 has_first_return = True
                 time_record['llm_first_return'] = round(first_return_time - t1, 2)
             if resp[6:].startswith("[DONE]"):
+                if extra_msg is not None:
+                    msg_response = {"query": query,
+                                "prompt": prompt,
+                                "result": f"data: {json.dumps({'answer': extra_msg}, ensure_ascii=False)}",
+                                "condense_question": condense_question,
+                                "retrieval_documents": retrieval_documents,
+                                "source_documents": source_documents}
+                    yield msg_response, history
                 last_return_time = time.perf_counter()
                 time_record['llm_completed'] = round(last_return_time - t1, 2) - time_record['llm_first_return']
                 history[-1][1] = acc_resp
@@ -664,7 +768,7 @@ class LocalDocQA:
         # completed_doc = Document(page_content=completed_content, metadata=sorted_json_datas[0]['kwargs']['metadata'])
         return completed_doc, completed_doc_with_figure
 
-    def aggregate_documents(self, source_documents, limited_token_nums, custom_llm):
+    def aggregate_documents(self, source_documents, limited_token_nums, custom_llm, rerank):
         # 聚合文档，具体逻辑是帮我判断所有候选是否集中在一个或两个文件中，是的话直接返回这一个或两个完整文档，如果tokens不够则截取文档中的完整上下文
         first_file_dict = {}
         ori_first_docs = []
@@ -676,8 +780,12 @@ class LocalDocQA:
                 first_file_dict['file_id'] = file_id
                 first_file_dict['doc_ids'] = [int(doc.metadata['doc_id'].split('_')[-1])]
                 ori_first_docs.append(doc)
-                first_file_dict['score'] = max(
-                    [doc.metadata['score'] for doc in source_documents if doc.metadata['file_id'] == file_id])
+                if rerank:
+                    first_file_dict['score'] = max(
+                        [doc.metadata['score'] for doc in source_documents if doc.metadata['file_id'] == file_id])
+                else:
+                    first_file_dict['score'] = min(
+                        [doc.metadata['score'] for doc in source_documents if doc.metadata['file_id'] == file_id])
             elif first_file_dict['file_id'] == file_id:
                 first_file_dict['doc_ids'].append(int(doc.metadata['doc_id'].split('_')[-1]))
                 ori_first_docs.append(doc)
@@ -685,8 +793,12 @@ class LocalDocQA:
                 second_file_dict['file_id'] = file_id
                 second_file_dict['doc_ids'] = [int(doc.metadata['doc_id'].split('_')[-1])]
                 ori_second_docs.append(doc)
-                second_file_dict['score'] = max(
-                    [doc.metadata['score'] for doc in source_documents if doc.metadata['file_id'] == file_id])
+                if rerank:
+                    second_file_dict['score'] = max(
+                        [doc.metadata['score'] for doc in source_documents if doc.metadata['file_id'] == file_id])
+                else:
+                    second_file_dict['score'] = min(
+                        [doc.metadata['score'] for doc in source_documents if doc.metadata['file_id'] == file_id])
             elif second_file_dict['file_id'] == file_id:
                 second_file_dict['doc_ids'].append(int(doc.metadata['doc_id'].split('_')[-1]))
                 ori_second_docs.append(doc)

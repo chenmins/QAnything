@@ -1,8 +1,11 @@
+import shutil
+
 from qanything_kernel.core.local_file import LocalFile
 from qanything_kernel.core.local_doc_qa import LocalDocQA
 from qanything_kernel.utils.custom_log import debug_logger, qa_logger
 from qanything_kernel.configs.model_config import (BOT_DESC, BOT_IMAGE, BOT_PROMPT, BOT_WELCOME,
-                                                   DEFAULT_PARENT_CHUNK_SIZE, MAX_CHARS, VECTOR_SEARCH_TOP_K)
+                                                   DEFAULT_PARENT_CHUNK_SIZE, MAX_CHARS, VECTOR_SEARCH_TOP_K,
+                                                   UPLOAD_ROOT_PATH, IMAGES_ROOT_PATH)
 from qanything_kernel.utils.general_utils import *
 from langchain.schema import Document
 from sanic.response import ResponseStream
@@ -480,6 +483,17 @@ async def delete_knowledge_base(req: request):
         asyncio.create_task(run_in_background(local_doc_qa.es_client.delete_files, file_ids, file_chunks))
         local_doc_qa.milvus_summary.delete_documents(file_ids)
         local_doc_qa.milvus_summary.delete_faqs(file_ids)
+
+        # delete kb_id file dir
+        try:
+            upload_path = os.path.join(UPLOAD_ROOT_PATH, user_id)
+            file_dir = os.path.join(upload_path, kb_id)
+            debug_logger.info("delete_knowledge_base file dir : %s", file_dir)
+            shutil.rmtree(file_dir)
+        except Exception as e:
+            debug_logger.error("An error occurred while constructing file paths: %s", str(e))
+
+
         debug_logger.info(f"""delete knowledge base {kb_id} success""")
     local_doc_qa.milvus_summary.delete_knowledge_base(user_id, kb_ids)
     return sanic_json({"code": 200, "msg": "Knowledge Base {} delete success".format(kb_ids)})
@@ -525,6 +539,7 @@ async def delete_docs(req: request):
     if len(valid_file_infos) == 0:
         return sanic_json({"code": 2004, "msg": "fail, files {} not found".format(file_ids)})
     valid_file_ids = [file_info[0] for file_info in valid_file_infos]
+    debug_logger.info("delete_docs valid_file_ids %s", valid_file_ids)
     # milvus_kb = local_doc_qa.match_milvus_kb(user_id, [kb_id])
     # milvus_kb.delete_files(file_ids)
     expr = f"""kb_id == "{kb_id}" and file_id in {valid_file_ids}"""  # 删除数据库中的记录
@@ -536,6 +551,21 @@ async def delete_docs(req: request):
     local_doc_qa.milvus_summary.delete_files(kb_id, valid_file_ids)
     local_doc_qa.milvus_summary.delete_documents(valid_file_ids)
     local_doc_qa.milvus_summary.delete_faqs(valid_file_ids)
+    # list file_ids
+    for file_id in file_ids:
+        try:
+            upload_path = os.path.join(UPLOAD_ROOT_PATH, user_id)
+            file_dir = os.path.join(upload_path, kb_id, file_id)
+            debug_logger.info("delete_docs file_dir %s", file_dir)
+            # delete file dir
+            shutil.rmtree(file_dir)
+            # delele images dir
+            images_dir = os.path.join(IMAGES_ROOT_PATH, file_id)
+            debug_logger.info("delete_docs images_dir %s", images_dir)
+            shutil.rmtree(images_dir)
+        except Exception as e:
+            debug_logger.error("An error occurred while constructing file paths: %s", str(e))
+
     return sanic_json({"code": 200, "msg": "documents {} delete success".format(valid_file_ids)})
 
 
@@ -629,34 +659,57 @@ async def local_doc_chat(req: request):
         if not local_doc_qa.milvus_summary.check_bot_is_exist(bot_id):
             return sanic_json({"code": 2003, "msg": "fail, Bot {} not found".format(bot_id)})
         bot_info = local_doc_qa.milvus_summary.get_bot(None, bot_id)[0]
-        bot_id, bot_name, desc, image, prompt, welcome, model, kb_ids_str, upload_time, user_id = bot_info
+        bot_id, bot_name, desc, image, prompt, welcome, kb_ids_str, upload_time, user_id, llm_setting = bot_info
         kb_ids = kb_ids_str.split(',')
         if not kb_ids:
             return sanic_json({"code": 2003, "msg": "fail, Bot {} unbound knowledge base.".format(bot_id)})
         custom_prompt = prompt
+        if not llm_setting:
+            return sanic_json({"code": 2003, "msg": "fail, Bot {} llm_setting is empty.".format(bot_id)})
+        llm_setting = json.loads(llm_setting)
+        rerank = llm_setting.get('rerank', True)
+        only_need_search_results = llm_setting.get('only_need_search_results', False)
+        need_web_search = llm_setting.get('networking', False)
+        api_base = llm_setting.get('api_base', '')
+        api_key = llm_setting.get('api_key', 'ollama')
+        api_context_length = llm_setting.get('api_context_length', 4096)
+        top_p = llm_setting.get('top_p', 0.99)
+        temperature = llm_setting.get('temperature', 0.5)
+        top_k = llm_setting.get('top_k', VECTOR_SEARCH_TOP_K)
+        model = llm_setting.get('model', 'gpt-4o-mini')
+        max_token = llm_setting.get('max_token')
+        hybrid_search = llm_setting.get('hybrid_search', False)
+        chunk_size = llm_setting.get('chunk_size', DEFAULT_PARENT_CHUNK_SIZE)
     else:
         kb_ids = safe_get(req, 'kb_ids')
         custom_prompt = safe_get(req, 'custom_prompt', None)
+        rerank = safe_get(req, 'rerank', default=True)
+        only_need_search_results = safe_get(req, 'only_need_search_results', False)
+        need_web_search = safe_get(req, 'networking', False)
+        api_base = safe_get(req, 'api_base', '')
+        # 如果api_base中包含0.0.0.0或127.0.0.1或localhost，替换为GATEWAY_IP
+        api_base = api_base.replace('0.0.0.0', GATEWAY_IP).replace('127.0.0.1', GATEWAY_IP).replace('localhost',
+                                                                                                    GATEWAY_IP)
+        api_key = safe_get(req, 'api_key', 'ollama')
+        api_context_length = safe_get(req, 'api_context_length', 4096)
+        top_p = safe_get(req, 'top_p', 0.99)
+        temperature = safe_get(req, 'temperature', 0.5)
+        top_k = safe_get(req, 'top_k', VECTOR_SEARCH_TOP_K)
+
+        model = safe_get(req, 'model', 'gpt-4o-mini')
+        max_token = safe_get(req, 'max_token')
+
+        hybrid_search = safe_get(req, 'hybrid_search', False)
+        chunk_size = safe_get(req, 'chunk_size', DEFAULT_PARENT_CHUNK_SIZE)
+
+    debug_logger.info('rerank %s', rerank)
+
     if len(kb_ids) > 20:
         return sanic_json({"code": 2005, "msg": "fail, kb_ids length should less than or equal to 20"})
     kb_ids = [correct_kb_id(kb_id) for kb_id in kb_ids]
     question = safe_get(req, 'question')
-    rerank = safe_get(req, 'rerank', default=True)
-    debug_logger.info('rerank %s', rerank)
     streaming = safe_get(req, 'streaming', False)
     history = safe_get(req, 'history', [])
-    only_need_search_results = safe_get(req, 'only_need_search_results', False)
-    need_web_search = safe_get(req, 'networking', False)
-
-    api_base = safe_get(req, 'api_base', '')
-    # 如果api_base中包含0.0.0.0或127.0.0.1或localhost，替换为GATEWAY_IP
-    api_base = api_base.replace('0.0.0.0', GATEWAY_IP).replace('127.0.0.1', GATEWAY_IP).replace('localhost', GATEWAY_IP)
-
-    api_key = safe_get(req, 'api_key', 'ollama')
-    api_context_length = safe_get(req, 'api_context_length', 4096)
-    top_p = safe_get(req, 'top_p', 0.99)
-    temperature = safe_get(req, 'temperature', 0.5)
-    top_k = safe_get(req, 'top_k', VECTOR_SEARCH_TOP_K)
 
     if top_k > 100:
         return sanic_json({"code": 2003, "msg": "fail, top_k should less than or equal to 100"})
@@ -684,11 +737,7 @@ async def local_doc_chat(req: request):
     if only_need_search_results and streaming:
         return sanic_json(
             {"code": 2006, "msg": "fail, only_need_search_results and streaming can't be True at the same time"})
-    model = safe_get(req, 'model', 'gpt-3.5-turbo-0613')
-    max_token = safe_get(req, 'max_token')
     request_source = safe_get(req, 'source', 'unknown')
-    hybrid_search = safe_get(req, 'hybrid_search', False)
-    web_chunk_size = safe_get(req, 'web_chunk_size', DEFAULT_PARENT_CHUNK_SIZE)
 
     debug_logger.info("history: %s ", history)
     debug_logger.info("question: %s", question)
@@ -708,7 +757,7 @@ async def local_doc_chat(req: request):
     debug_logger.info("top_k: %s", top_k)
     debug_logger.info("temperature: %s", temperature)
     debug_logger.info("hybrid_search: %s", hybrid_search)
-    debug_logger.info("web_chunk_size: %s", web_chunk_size)
+    debug_logger.info("chunk_size: %s", chunk_size)
 
     time_record = {}
     if kb_ids:
@@ -752,7 +801,7 @@ async def local_doc_chat(req: request):
                                                                                     time_record=time_record,
                                                                                     need_web_search=need_web_search,
                                                                                     hybrid_search=hybrid_search,
-                                                                                    web_chunk_size=web_chunk_size,
+                                                                                    web_chunk_size=chunk_size,
                                                                                     temperature=temperature,
                                                                                     api_base=api_base,
                                                                                     api_key=api_key,
@@ -771,7 +820,7 @@ async def local_doc_chat(req: request):
                     # result = resp['result']
                     time_record['chat_completed'] = round(time.perf_counter() - preprocess_start, 2)
                     if time_record.get('llm_completed', 0) > 0:
-                       time_record['tokens_per_second'] = round(
+                        time_record['tokens_per_second'] = round(
                             len(result) / time_record['llm_completed'], 2)
                     formatted_time_record = format_time_record(time_record)
                     chat_data = {'user_id': user_id, 'kb_ids': kb_ids, 'query': question, "model": model,
@@ -833,7 +882,7 @@ async def local_doc_chat(req: request):
                                                                            only_need_search_results=only_need_search_results,
                                                                            need_web_search=need_web_search,
                                                                            hybrid_search=hybrid_search,
-                                                                           web_chunk_size=web_chunk_size,
+                                                                           web_chunk_size=chunk_size,
                                                                            temperature=temperature,
                                                                            api_base=api_base,
                                                                            api_key=api_key,
@@ -1211,8 +1260,8 @@ async def get_bot_info(req: request):
     bot_infos = local_doc_qa.milvus_summary.get_bot(user_id, bot_id)
     data = []
     for bot_info in bot_infos:
-        if bot_info[7] != "":
-            kb_ids = bot_info[7].split(',')
+        if bot_info[6] != "":
+            kb_ids = bot_info[6].split(',')
             kb_infos = local_doc_qa.milvus_summary.get_knowledge_base_name(kb_ids)
             kb_names = []
             for kb_id in kb_ids:
@@ -1225,8 +1274,8 @@ async def get_bot_info(req: request):
             kb_names = []
         info = {"bot_id": bot_info[0], "user_id": user_id, "bot_name": bot_info[1], "description": bot_info[2],
                 "head_image": bot_info[3], "prompt_setting": bot_info[4], "welcome_message": bot_info[5],
-                "model": bot_info[6], "kb_ids": kb_ids, "kb_names": kb_names,
-                "update_time": bot_info[8].strftime("%Y-%m-%d %H:%M:%S")}
+                "kb_ids": kb_ids, "kb_names": kb_names,
+                "update_time": bot_info[7].strftime("%Y-%m-%d %H:%M:%S"), "llm_setting": bot_info[9]}
         data.append(info)
     return sanic_json({"code": 200, "msg": "success", "data": data})
 
@@ -1245,7 +1294,6 @@ async def new_bot(req: request):
     head_image = safe_get(req, "head_image", BOT_IMAGE)
     prompt_setting = safe_get(req, "prompt_setting", BOT_PROMPT)
     welcome_message = safe_get(req, "welcome_message", BOT_WELCOME)
-    model = safe_get(req, "model", 'MiniChat-2-3B')
     kb_ids = safe_get(req, "kb_ids", [])
     kb_ids_str = ",".join(kb_ids)
 
@@ -1256,7 +1304,7 @@ async def new_bot(req: request):
     debug_logger.info("new_bot %s", user_id)
     bot_id = 'BOT' + uuid.uuid4().hex
     local_doc_qa.milvus_summary.new_qanything_bot(bot_id, user_id, bot_name, desc, head_image, prompt_setting,
-                                                  welcome_message, model, kb_ids_str)
+                                                  welcome_message, kb_ids_str)
     create_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     return sanic_json({"code": 200, "msg": "success create qanything bot {}".format(bot_id),
                        "data": {"bot_id": bot_id, "bot_name": bot_name, "create_time": create_time}})
@@ -1298,7 +1346,6 @@ async def update_bot(req: request):
     head_image = safe_get(req, "head_image", bot_info[3])
     prompt_setting = safe_get(req, "prompt_setting", bot_info[4])
     welcome_message = safe_get(req, "welcome_message", bot_info[5])
-    model = safe_get(req, "model", bot_info[6])
     kb_ids = safe_get(req, "kb_ids")
     if kb_ids is not None:
         not_exist_kb_ids = local_doc_qa.milvus_summary.check_kb_exist(user_id, kb_ids)
@@ -1307,7 +1354,43 @@ async def update_bot(req: request):
             return sanic_json({"code": 2001, "msg": msg, "data": [{}]})
         kb_ids_str = ",".join(kb_ids)
     else:
-        kb_ids_str = bot_info[7]
+        kb_ids_str = bot_info[6]
+
+    llm_setting = json.loads(bot_info[9])
+    if api_base := safe_get(req, "api_base"):
+        llm_setting["api_base"] = api_base
+    if api_key := safe_get(req, "api_key"):
+        llm_setting["api_key"] = api_key
+    if api_context_length := safe_get(req, "api_context_length"):
+        llm_setting["api_context_length"] = api_context_length
+    if top_p := safe_get(req, "top_p"):
+        llm_setting["top_p"] = top_p
+    if top_k := safe_get(req, "top_k"):
+        llm_setting["top_k"] = top_k
+    if chunk_size := safe_get(req, "chunk_size"):
+        llm_setting["chunk_size"] = chunk_size
+    if temperature := safe_get(req, "temperature"):
+        llm_setting["temperature"] = temperature
+    if model := safe_get(req, "model"):
+        llm_setting["model"] = model
+    if max_token := safe_get(req, "max_token"):
+        llm_setting["max_token"] = max_token
+    # 如果rerank不是None，赋值，false也可以
+    rerank = safe_get(req, "rerank")
+    if rerank is not None:
+        llm_setting["rerank"] = rerank
+    hybrid_search = safe_get(req, "hybrid_search")
+    if hybrid_search is not None:
+        llm_setting["hybrid_search"] = hybrid_search
+    networking = safe_get(req, "networking")
+    if networking is not None:
+        llm_setting["networking"] = networking
+    only_need_search_results = safe_get(req, "only_need_search_results")
+    if only_need_search_results is not None:
+        llm_setting["only_need_search_results"] = only_need_search_results
+
+    debug_logger.info(f"update llm_setting: {llm_setting}")
+
     # 判断哪些项修改了
     if bot_name != bot_info[1]:
         debug_logger.info(f"update bot name from {bot_info[1]} to {bot_name}")
@@ -1319,15 +1402,13 @@ async def update_bot(req: request):
         debug_logger.info(f"update bot prompt_setting from {bot_info[4]} to {prompt_setting}")
     if welcome_message != bot_info[5]:
         debug_logger.info(f"update bot welcome_message from {bot_info[5]} to {welcome_message}")
-    if model != bot_info[6]:
-        debug_logger.info(f"update bot model from {bot_info[6]} to {model}")
-    if kb_ids_str != bot_info[7]:
-        debug_logger.info(f"update bot kb_ids from {bot_info[7]} to {kb_ids_str}")
+    if kb_ids_str != bot_info[6]:
+        debug_logger.info(f"update bot kb_ids from {bot_info[6]} to {kb_ids_str}")
     #  update_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP 根据这个mysql的格式获取现在的时间
     update_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     debug_logger.info(f"update_time: {update_time}")
     local_doc_qa.milvus_summary.update_bot(user_id, bot_id, bot_name, description, head_image, prompt_setting,
-                                           welcome_message, model, kb_ids_str, update_time)
+                                           welcome_message, kb_ids_str, update_time, llm_setting)
     return sanic_json({"code": 200, "msg": "Bot {} update success".format(bot_id)})
 
 
@@ -1373,6 +1454,7 @@ async def get_file_base64(req: request):
     file_id = safe_get(req, 'file_id')
     debug_logger.info("get_file_base64 %s", file_id)
     file_location = local_doc_qa.milvus_summary.get_file_location(file_id)
+    debug_logger.info("file_location %s", file_location)
     # file_location = '/home/liujx/Downloads/2021-08-01 00:00:00.pdf'
     if not file_location:
         return sanic_json({"code": 2005, "msg": "fail, file_id is Invalid"})
