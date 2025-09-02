@@ -10,7 +10,7 @@ services:
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/:/opt/QAnything/
     ports:
-      - "18777:8777"
+      - "8777:8777"
       - "8776:9001"
       - "8775:9009"
       - "8774:8001"
@@ -25,7 +25,7 @@ services:
 #    network_mode: "host"
     environment:
       - NCCL_LAUNCH_MODE=PARALLEL
-      - GPUID=${GPUID:-0}
+      - GPUID=${GPUID:-3}
       - USER_IP=${USER_IP:-111.31.43.18}
       - Gateway_IP=${Gateway_IP:-111.31.43.18}
       - TIKTOKEN_CACHE_DIR=/opt/QAnything/tiktoken/encodings
