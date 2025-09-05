@@ -76,51 +76,35 @@ def corner_decode(mk, st_reg, mk_reg=None, K=400,device=None):
     corner_dict = {'scores': scores, 'inds': inds, 'ys': ys, 'xs': xs, 'gboxes': bboxes}
     return scores, inds, ys, xs, bboxes, corner_dict
 
-def ctdet_4ps_decode(heat, wh, ax, cr, corner_dict=None, reg=None, cat_spec_wh=False, K=100, wiz_rev = False):
-    
-    # if wiz_rev :
-    #     print('Grouping and Parsing ...')
+def ctdet_4ps_decode(heat, wh, ax, cr, corner_dict=None, reg=None, cat_spec_wh=False, K=100, wiz_rev=False):
     batch, cat, height, width = heat.size()
     device = heat.device
-    # heat = torch.sigmoid(heat)
-    # perform nms on heatmaps
-    heat,keep = _nms(heat,'hm.0.maxpool')
-  
-    scores, inds, clses, ys, xs = _topk(heat, K=K,device=device)
+    heat, keep = _nms(heat, 'hm.0.maxpool')
+
+    scores, inds, clses, ys, xs = _topk(heat, K=K, device=device)
     if reg is not None:
-      reg = _tranpose_and_gather_feat(reg, inds)
-      reg = reg.view(batch, K, 2)
-      xs = xs.view(batch, K, 1) + reg[:, :, 0:1]
-      ys = ys.view(batch, K, 1) + reg[:, :, 1:2]
+        reg = _tranpose_and_gather_feat(reg, inds)
+        reg = reg.view(batch, K, 2)
+        xs = xs.view(batch, K, 1) + reg[:, :, 0:1]
+        ys = ys.view(batch, K, 1) + reg[:, :, 1:2]
     else:
-      xs = xs.view(batch, K, 1) + 0.5
-      ys = ys.view(batch, K, 1) + 0.5
+        xs = xs.view(batch, K, 1) + 0.5
+        ys = ys.view(batch, K, 1) + 0.5
     wh = _tranpose_and_gather_feat(wh, inds)
     ax = _tranpose_and_gather_feat(ax, inds)
-    
+
     if cat_spec_wh:
-      wh = wh.view(batch, K, cat, 8)
-      clses_ind = clses.view(batch, K, 1, 1).expand(batch, K, 1, 8).long()
-      wh = wh.gather(2, clses_ind).view(batch, K, 8)
+        wh = wh.view(batch, K, cat, 8)
+        clses_ind = clses.view(batch, K, 1, 1).expand(batch, K, 1, 8).long()
+        wh = wh.gather(2, clses_ind).view(batch, K, 8)
     else:
-      wh = wh.view(batch, K, 8)
-    clses  = clses.view(batch, K, 1).float()
+        wh = wh.view(batch, K, 8)
+    clses = clses.view(batch, K, 1).float()
     scores = scores.view(batch, K, 1)
 
-    '''
-    bboxes = torch.cat([xs - wh[..., 0:1], 
+    bboxes = torch.cat([xs - wh[..., 0:1],
                         ys - wh[..., 1:2],
-                        xs + wh[..., 2:3], 
-                        ys - wh[..., 3:4],
-                        xs + wh[..., 4:5],
-                        ys + wh[..., 5:6],
-                        xs - wh[..., 6:7],
-                        ys + wh[..., 7:8]], dim=2)
-    '''
-
-    bboxes = torch.cat([xs - wh[..., 0:1], 
-                        ys - wh[..., 1:2],
-                        xs - wh[..., 2:3], 
+                        xs - wh[..., 2:3],
                         ys - wh[..., 3:4],
                         xs - wh[..., 4:5],
                         ys - wh[..., 5:6],
@@ -128,92 +112,96 @@ def ctdet_4ps_decode(heat, wh, ax, cr, corner_dict=None, reg=None, cat_spec_wh=F
                         ys - wh[..., 7:8]], dim=2)
 
     rev_time_s1 = time.time()
-    if wiz_rev :
+
+    if wiz_rev:
+
         bboxes_rev = bboxes.clone()
-        bboxes_cpu = bboxes.clone().cpu()
+        bboxes_rev_numpy = bboxes_rev.cpu().numpy()[0]
+
+        bboxes_numpy = bboxes.clone().cpu().numpy()[0]
+        bboxes_numpy_42 = bboxes_numpy.reshape(-1, 4, 2)
+        bbox_minmaxs = np.concatenate([np.min(bboxes_numpy_42, 1), np.max(bboxes_numpy_42, 1)], 1)
 
         gboxes = corner_dict['gboxes']
-        gboxes_cpu = gboxes.cpu()
+        gboxes_numpy = gboxes.cpu().numpy()[0]
+        gboxes_numpy_42 = gboxes_numpy.reshape(-1, 4, 2)
+        gbox_minmaxs = np.concatenate([np.min(gboxes_numpy_42, 1), np.max(gboxes_numpy_42, 1)], 1)
 
         num_bboxes = bboxes.shape[1]
         num_gboxes = gboxes.shape[1]
 
-        corner_xs = corner_dict['xs'] 
-        corner_ys = corner_dict['ys'] 
-        corner_scores = corner_dict['scores'] 
-        
-       
-        for i in range(num_bboxes):
-            if scores[0,i,0] >= 0.2 :
-                count = 0 # counting the number of ends of st head in bbox i
-                for j in range(num_gboxes):
-                    if corner_scores[0,j,0] >= 0.3:
-                        #here comes to one pair of valid bbox and gbox
-                        #step1 is there an overlap
-                      
-                        bbox = bboxes_cpu[0,i,:]
-                        gbox = gboxes_cpu[0,j,:]
-                        #rev_time_s3 = time.time()
-                        if is_group_faster_faster(bbox, gbox): 
-                            #step2 find which corner point to refine, and do refine
-                            cr_x = corner_xs[0,j,0]
-                            cr_y = corner_ys[0,j,0]
-                        
-                            ind4ps = find4ps(bbox, cr_x, cr_y, device)
-                            if bboxes_rev[0, i, 2*ind4ps] == bboxes[0, i, 2*ind4ps] and bboxes_rev[0, i, 2*ind4ps+1] == bboxes[0, i, 2*ind4ps+1]:
-                                #first_shift
-                                count = count + 1
-                                bboxes_rev[0, i, 2*ind4ps] = cr_x
-                                bboxes_rev[0, i, 2*ind4ps + 1] = cr_y
-                            else:
-                                origin_x = bboxes[0, i, 2*ind4ps]
-                                origin_y = bboxes[0, i, 2*ind4ps+1]
+        scores_numpy = scores.cpu().numpy()[0, :, 0]
 
-                                old_x = bboxes_rev[0, i, 2*ind4ps]
-                                old_y = bboxes_rev[0, i, 2*ind4ps+1]
+        corner_xs_numpy = corner_dict['xs'].cpu().numpy()[0, :, 0]
+        corner_ys_numpy = corner_dict['ys'].cpu().numpy()[0, :, 0]
+        corner_scores_numpy = corner_dict['scores'].cpu().numpy()[0, :, 0]
+
+        for i in range(num_bboxes):
+            if scores_numpy[i] >= 0.2:
+                count = 0  # counting the number of ends of st head in bbox i
+                for j in range(num_gboxes):
+                    if corner_scores_numpy[j] >= 0.3:
+                        if is_group_faster_faster(bboxes_numpy_42[i], gboxes_numpy_42[j], bbox_minmaxs[i],
+                                                  gbox_minmaxs[j]):
+                            cr_x = corner_xs_numpy[j]
+                            cr_y = corner_ys_numpy[j]
+                            bbox = torch.tensor(bboxes_numpy[i])  # need fix
+                            ind4ps = find4ps(bbox, cr_x, cr_y, device)
+                            if bboxes_rev_numpy[i, 2 * ind4ps] == bboxes_numpy[i, 2 * ind4ps] and bboxes_rev_numpy[
+                                i, 2 * ind4ps + 1] == bboxes_numpy[i, 2 * ind4ps + 1]:
+                                # first_shift
+                                count = count + 1
+                                bboxes_rev_numpy[i, 2 * ind4ps] = cr_x
+                                bboxes_rev_numpy[i, 2 * ind4ps + 1] = cr_y
+                            else:
+                                origin_x = bboxes_numpy[i, 2 * ind4ps]
+                                origin_y = bboxes_numpy[i, 2 * ind4ps + 1]
+
+                                old_x = bboxes_rev_numpy[i, 2 * ind4ps]
+                                old_y = bboxes_rev_numpy[i, 2 * ind4ps + 1]
 
                                 if dist(origin_x, origin_y, old_x, old_y) >= dist(origin_x, origin_y, cr_x, cr_y):
                                     count = count + 1
-                                    bboxes_rev[0, i, 2*ind4ps] = cr_x
-                                    bboxes_rev[0, i, 2*ind4ps + 1] = cr_y
+                                    bboxes_rev_numpy[i, 2 * ind4ps] = cr_x
+                                    bboxes_rev_numpy[i, 2 * ind4ps + 1] = cr_y
                                 else:
                                     continue
                         else:
-                           
+
                             continue
                     else:
-                        break        
+                        break
                 if count <= 2:
-                    scores[0,i,0] = scores[0,i,0] * 0.4
-            else :
+                    scores[0, i, 0] = scores[0, i, 0] * 0.4
+            else:
                 break
 
     if wiz_rev:
 
-        cc_match = torch.cat([(bboxes_rev[:,:,0:1]) + width * torch.round(bboxes_rev[:,:,1:2]),
-                            (bboxes_rev[:,:,2:3]) + width * torch.round(bboxes_rev[:,:,3:4]),
-                            (bboxes_rev[:,:,4:5]) + width * torch.round(bboxes_rev[:,:,5:6]),
-                            (bboxes_rev[:,:,6:7]) + width * torch.round(bboxes_rev[:,:,7:8])], dim=2)
-    
-    else:    
+        cc_match = torch.cat([(bboxes_rev[:, :, 0:1]) + width * torch.round(bboxes_rev[:, :, 1:2]),
+                              (bboxes_rev[:, :, 2:3]) + width * torch.round(bboxes_rev[:, :, 3:4]),
+                              (bboxes_rev[:, :, 4:5]) + width * torch.round(bboxes_rev[:, :, 5:6]),
+                              (bboxes_rev[:, :, 6:7]) + width * torch.round(bboxes_rev[:, :, 7:8])], dim=2)
+
+    else:
         cc_match = torch.cat([(xs - wh[..., 0:1]) + width * torch.round(ys - wh[..., 1:2]),
-                            (xs - wh[..., 2:3]) + width * torch.round(ys - wh[..., 3:4]),
-                            (xs - wh[..., 4:5]) + width * torch.round(ys - wh[..., 5:6]),
-                            (xs - wh[..., 6:7]) + width * torch.round(ys - wh[..., 7:8])], dim=2)
-    
+                              (xs - wh[..., 2:3]) + width * torch.round(ys - wh[..., 3:4]),
+                              (xs - wh[..., 4:5]) + width * torch.round(ys - wh[..., 5:6]),
+                              (xs - wh[..., 6:7]) + width * torch.round(ys - wh[..., 7:8])], dim=2)
+
     cc_match = torch.round(cc_match).to(torch.int64)
 
     cr_feat = _get_4ps_feat(cc_match, cr)
-    cr_feat = cr_feat.sum(axis = 3)
+    cr_feat = cr_feat.sum(axis=3)
     if wiz_rev:
         detections = torch.cat([bboxes_rev, scores, clses], dim=2)
         _, sorted_ind = torch.sort(scores, descending=True, dim=1)
         sorted_inds = sorted_ind.expand(detections.size(0), detections.size(1), detections.size(2))
         detections = detections.gather(1, sorted_inds)
         sorted_inds2 = sorted_ind.expand(detections.size(0), detections.size(1), ax.size(2))
-        ax =  ax.gather(1, sorted_inds2)
+        ax = ax.gather(1, sorted_inds2)
     else:
-       
+
         detections = torch.cat([bboxes, scores, clses], dim=2)
 
     return detections, keep, ax, cr_feat

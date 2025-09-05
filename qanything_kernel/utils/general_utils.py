@@ -366,7 +366,7 @@ def check_user_id_and_user_info(user_id, user_info):
     if not validate_user_id(user_id):
         msg = get_invalid_user_id_msg(user_id)
         return False, msg
-    if not user_info.isdigit():
+    if not str(user_info).isdigit():
         msg = "fail, user_info 必须是纯数字"
         return False, msg
     return True, 'success'

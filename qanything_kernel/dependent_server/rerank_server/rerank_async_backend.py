@@ -10,6 +10,11 @@ from concurrent.futures import ThreadPoolExecutor
 from qanything_kernel.utils.custom_log import rerank_logger
 import numpy as np
 
+def sigmoid(x):
+    x = x.astype('float32')
+    scores = 1/(1+np.exp(-x))
+    scores = np.clip(1.5*(scores-0.5)+0.5, 0, 1)
+    return scores
 
 class RerankAsyncBackend:
     def __init__(self, model_path, use_cpu=True, num_threads=4):
@@ -20,15 +25,16 @@ class RerankAsyncBackend:
         # 创建一个ONNX Runtime会话设置，使用GPU执行
         sess_options = SessionOptions()
         sess_options.graph_optimization_level = GraphOptimizationLevel.ORT_ENABLE_ALL
+        sess_options.intra_op_num_threads = 0
+        sess_options.inter_op_num_threads = 0
+        self.batch_size = LOCAL_RERANK_BATCH  # 批处理大小
 
         if use_cpu:
             providers = ['CPUExecutionProvider']
             self.executor = ThreadPoolExecutor(max_workers=num_threads)
-            self.batch_size = LOCAL_RERANK_BATCH  # CPU批处理大小
         else:
             providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
             self.executor = ThreadPoolExecutor(max_workers=num_threads)
-            self.batch_size = 16  # GPU批处理大小固定为16
 
         self.session = InferenceSession(model_path, sess_options, providers=providers)
         self._tokenizer = AutoTokenizer.from_pretrained(LOCAL_RERANK_PATH, use_fast=True)
@@ -50,34 +56,49 @@ class RerankAsyncBackend:
         # debug_logger.info(f"rerank result: {result}")
 
         # 应用sigmoid函数
-        sigmoid_scores = 1 / (1 + np.exp(-np.array(result[0])))
+        sigmoid_scores = sigmoid(np.array(result[0]))
 
         return sigmoid_scores.reshape(-1).tolist()
 
     def merge_inputs(self, chunk1_raw, chunk2):
         chunk1 = deepcopy(chunk1_raw)
-        chunk1['input_ids'].extend(chunk2['input_ids'])
+
+        # 在 chunk1 的末尾添加分隔符
         chunk1['input_ids'].append(self.spe_id)
+        chunk1['attention_mask'].append(1)  # 为分隔符添加 attention mask
+
+        # 添加 chunk2 的内容
+        chunk1['input_ids'].extend(chunk2['input_ids'])
         chunk1['attention_mask'].extend(chunk2['attention_mask'])
-        chunk1['attention_mask'].append(chunk2['attention_mask'][0])
+
+        # 在整个序列的末尾再添加一个分隔符
+        chunk1['input_ids'].append(self.spe_id)
+        chunk1['attention_mask'].append(1)  # 为最后的分隔符添加 attention mask
+
         if 'token_type_ids' in chunk1:
-            token_type_ids = [1 for _ in range(len(chunk2['token_type_ids']) + 1)]
+            # 为 chunk2 和两个分隔符添加 token_type_ids
+            token_type_ids = [1 for _ in range(len(chunk2['token_type_ids']) + 2)]
             chunk1['token_type_ids'].extend(token_type_ids)
+
         return chunk1
 
     def tokenize_preproc(self, query: str, passages: List[str]):
-        query_inputs = self._tokenizer(query, add_special_tokens=False, truncation=False, padding=False)
-        max_passage_inputs_length = self.max_length - len(query_inputs['input_ids']) - 1
+        query_inputs = self._tokenizer.encode_plus(query, truncation=False, padding=False)
+        max_passage_inputs_length = self.max_length - len(query_inputs['input_ids']) - 2  # 减2是因为添加了两个分隔符
+
         assert max_passage_inputs_length > 10
         overlap_tokens = min(self.overlap_tokens, max_passage_inputs_length * 2 // 7)
 
-        merge_inputs, merge_inputs_idxs = [], []
+        # 组[query, passage]对
+        merge_inputs = []
+        merge_inputs_idxs = []
         for pid, passage in enumerate(passages):
-            passage_inputs = self._tokenizer(passage, add_special_tokens=False, truncation=False, padding=False)
+            passage_inputs = self._tokenizer.encode_plus(passage, truncation=False, padding=False,
+                                                         add_special_tokens=False)
             passage_inputs_length = len(passage_inputs['input_ids'])
 
             if passage_inputs_length <= max_passage_inputs_length:
-                if not passage_inputs['attention_mask']:
+                if passage_inputs['attention_mask'] is None or len(passage_inputs['attention_mask']) == 0:
                     continue
                 qp_merge_inputs = self.merge_inputs(query_inputs, passage_inputs)
                 merge_inputs.append(qp_merge_inputs)
