@@ -1,7 +1,7 @@
 import traceback
 import numpy as np
 import time
-from typing import List, Union
+from typing import List, Union, Optional, Dict, Any
 from numpy import ndarray
 import torch
 from torch import Tensor
@@ -21,7 +21,18 @@ class EmbeddingOnnxBackend:
         self.batch_size = LOCAL_EMBED_BATCH
         self.max_length = LOCAL_EMBED_MAX_LENGTH
         self.default_task_type = 'text-matching'  # 可以根据需求修改
-        self.task_id = np.array(self._config.lora_adaptations.index(self.default_task_type), dtype=np.int64)
+        
+        # 修复: 检查 lora_adaptations 是否存在，如果不存在则设置默认的 task_id
+        if hasattr(self._config, 'lora_adaptations'):
+            try:
+                self.task_id = np.array(self._config.lora_adaptations.index(self.default_task_type), dtype=np.int64)
+            except (ValueError, AttributeError):
+                embed_logger.warning(f"Task type '{self.default_task_type}' not found in lora_adaptations, using default task_id 0")
+                self.task_id = np.array(0, dtype=np.int64)
+        else:
+            embed_logger.warning("Model config does not have 'lora_adaptations' attribute, using default task_id 0")
+            self.task_id = np.array(0, dtype=np.int64)
+            
         self.io_binding = None
 
         sess_options = SessionOptions()
@@ -83,11 +94,25 @@ class EmbeddingOnnxBackend:
 
                     io_binding.synchronize_outputs()
                     outputs_onnx = io_binding.copy_outputs_to_cpu()
-            except:
+            except Exception as e:
                 embed_logger.error(f'Inference failed {traceback.format_exc()}, retrying...')
                 outputs_onnx = None
             try_num -= 1
         return outputs_onnx
+
+    def _get_task_id(self, task_type: Optional[str] = None) -> np.ndarray:
+        """获取任务ID，添加错误处理"""
+        if task_type is None:
+            task_type = self.default_task_type
+            
+        if hasattr(self._config, 'lora_adaptations'):
+            try:
+                return np.array(self._config.lora_adaptations.index(task_type), dtype=np.int64)
+            except (ValueError, AttributeError):
+                embed_logger.warning(f"Task type '{task_type}' not found in lora_adaptations, using default task_id 0")
+                return np.array(0, dtype=np.int64)
+        else:
+            return self.task_id  # 使用初始化时设置的默认值
 
     def encode(self, sentence: Union[str, List[str]],
                return_numpy: bool = False,
@@ -131,14 +156,17 @@ class EmbeddingOnnxBackend:
                     max_length=max_length,
                     return_tensors="np"
                 )
-            if task_type is None:
-                task_type = self.default_task_type
-            task_id = np.array(self._config.lora_adaptations.index(task_type), dtype=np.int64)
+            
+            # 获取任务ID，使用辅助方法处理错误情况
+            task_id = self._get_task_id(task_type)
+            
+            # 构建模型输入
             inputs = {
                 'input_ids': input_text['input_ids'],
                 'attention_mask': input_text['attention_mask'],
                 'task_id': task_id,
             }
+            
             # 打印输入的形状和 query 的总长度
             embed_logger.info(f"query num: {len(sentence)}, max_length: {max_length}, batch_size: {batch_size}")
             embed_logger.info(f"input shape: {inputs['input_ids'].shape}, query total char_lens: {inputs['attention_mask'].sum()}")
@@ -146,14 +174,14 @@ class EmbeddingOnnxBackend:
             if return_tokens_num:
                 tokens_num += (inputs['attention_mask'].sum().item() - 2 * inputs['attention_mask'].shape[0])
 
-            # 添加 task_id 到输入中
-            if task_type is None:
-                task_type = self.default_task_type
-
             start_time_model = time.time()
-            embed_logger.info(f"task_type: {task_type}")
+            embed_logger.info(f"task_type: {task_type or self.default_task_type}")
             outputs_onnx = self.inference(inputs)
             using_time_model += (time.time() - start_time_model)
+
+            if outputs_onnx is None:
+                embed_logger.error("Failed to get embeddings from model")
+                raise RuntimeError("Model inference failed")
 
             embeddings = np.asarray(outputs_onnx[0][:, 0])
             if normalize_to_unit:
