@@ -21,98 +21,59 @@
             <div v-else class="ai">
               <div class="content">
                 <img class="avatar" src="@/assets/home/ai-avatar.png" alt="头像" />
-                <p
-                  v-if="!item.onlySearch"
-                  class="question-text"
-                  :class="[
-                    !item.source.length && !item?.picList?.length ? 'change-radius' : '',
-                    item.showTools ? '' : 'flashing',
-                  ]"
-                >
+                <p v-if="!item.onlySearch" class="question-text" :class="[
+                  !item.source.length && !item?.picList?.length ? 'change-radius' : '',
+                  item.showTools ? '' : 'flashing',
+                ]">
                   <HighLightMarkDown v-if="item.answer" :content="item.answer" />
                   <span v-else>{{ item.answer }}</span>
-                  <ChatInfoPanel
-                    v-if="Object.keys(item?.itemInfo?.tokenInfo || {}).length"
-                    :chat-item-info="item.itemInfo"
-                  />
+                  <ChatInfoPanel v-if="Object.keys(item?.itemInfo?.tokenInfo || {}).length"
+                    :chat-item-info="item.itemInfo" />
                 </p>
               </div>
               <template v-if="item?.picList?.length">
-                <div
-                  v-for="(picItem, picIndex) in item.picList"
-                  :key="picItem + picIndex"
-                  :class="[
-                    'data-picList',
-                    !item.source.length && picIndex + 1 === item.picList.length
-                      ? 'picList-radius'
-                      : '',
-                  ]"
-                >
+                <div v-for="(picItem, picIndex) in item.picList" :key="picItem + picIndex" :class="[
+                  'data-picList',
+                  !item.source.length && picIndex + 1 === item.picList.length
+                    ? 'picList-radius'
+                    : '',
+                ]">
                   <a-image :width="150" :src="picItem" class="responsive-image" />
                 </div>
               </template>
               <template v-if="item.source.length">
-                <div
-                  :class="[
-                    'source-total',
-                    !showSourceIdxs.includes(index) ? 'source-total-last' : '',
-                  ]"
-                >
+                <div :class="[
+                  'source-total',
+                  !showSourceIdxs.includes(index) ? 'source-total-last' : '',
+                ]">
                   <span v-if="language === 'zh'">找到了{{ item.source.length }}个信息来源：</span>
                   <span v-else>Found {{ item.source.length }} source of information</span>
-                  <SvgIcon
-                    v-show="!showSourceIdxs.includes(index)"
-                    name="down"
-                    @click="showSourceList(index)"
-                  />
-                  <SvgIcon
-                    v-show="showSourceIdxs.includes(index)"
-                    name="up"
-                    @click="hideSourceList(index)"
-                  />
+                  <SvgIcon v-show="!showSourceIdxs.includes(index)" name="down" @click="showSourceList(index)" />
+                  <SvgIcon v-show="showSourceIdxs.includes(index)" name="up" @click="hideSourceList(index)" />
                 </div>
                 <div v-show="showSourceIdxs.includes(index)" class="source-list">
-                  <div
-                    v-for="(sourceItem, sourceIndex) in item.source"
-                    :key="sourceIndex"
-                    class="data-source"
-                  >
+                  <div v-for="(sourceItem, sourceIndex) in item.source" :key="sourceIndex" class="data-source">
                     <p v-show="sourceItem.file_name" class="control">
                       <span class="tips">{{ common.dataSource }}{{ sourceIndex + 1 }}:</span>
-                      <a
-                        v-if="sourceItem.file_id.startsWith('http')"
-                        :href="sourceItem.file_id"
-                        target="_blank"
-                      >
+                      <a v-if="sourceItem.file_id.startsWith('http')" :href="sourceItem.file_id" target="_blank">
                         {{ sourceItem.file_name }}
                       </a>
-                      <span
-                        v-else
-                        :class="[
-                          'file',
-                          checkFileType(sourceItem.file_name) ? 'filename-active' : '',
-                        ]"
-                        @click="handleChatSource(sourceItem)"
-                      >
+                      <span v-else :class="[
+                        'file',
+                        checkFileType(sourceItem.file_name) ? 'filename-active' : '',
+                      ]" @click="handleChatSource(sourceItem)">
                         {{ sourceItem.file_name }}
                       </span>
-                      <SvgIcon
-                        v-show="sourceItem.showDetailDataSource"
-                        name="iconup"
-                        @click="hideDetail(item, sourceIndex)"
-                      />
-                      <SvgIcon
-                        v-show="!sourceItem.showDetailDataSource"
-                        name="icondown"
-                        @click="showDetail(item, sourceIndex)"
-                      />
+                      <SvgIcon v-show="sourceItem.showDetailDataSource" name="iconup"
+                        @click="hideDetail(item, sourceIndex)" />
+                      <SvgIcon v-show="!sourceItem.showDetailDataSource" name="icondown"
+                        @click="showDetail(item, sourceIndex)" />
                     </p>
                     <Transition name="sourceitem">
                       <div v-show="sourceItem.showDetailDataSource" class="source-content">
                         <p v-html="sourceItem.content?.replaceAll('\n', '<br/>')"></p>
                         <p class="score">
-                          <span class="tips">{{ common.correlation }}</span
-                          >{{ sourceItem.score }}
+                          <span class="tips">{{ common.correlation }}</span>{{ sourceItem.score }}
                         </p>
                       </div>
                     </Transition>
@@ -125,27 +86,15 @@
                   <span class="reload-text">{{ common.regenerate }}</span>
                 </div>
                 <div class="tools">
-                  <SvgIcon
-                    :style="{
-                      color: item.copied ? '#4D71FF' : '',
-                    }"
-                    name="copy"
-                    @click="myCopy(item)"
-                  ></SvgIcon>
-                  <SvgIcon
-                    :style="{
-                      color: item.like ? '#4D71FF' : '',
-                    }"
-                    name="like"
-                    @click="like(item, $event)"
-                  ></SvgIcon>
-                  <SvgIcon
-                    :style="{
-                      color: item.unlike ? '#4D71FF' : '',
-                    }"
-                    name="unlike"
-                    @click="unlike(item)"
-                  ></SvgIcon>
+                  <SvgIcon :style="{
+                    color: item.copied ? '#4D71FF' : '',
+                  }" name="copy" @click="myCopy(item)"></SvgIcon>
+                  <SvgIcon :style="{
+                    color: item.like ? '#4D71FF' : '',
+                  }" name="like" @click="like(item, $event)"></SvgIcon>
+                  <SvgIcon :style="{
+                    color: item.unlike ? '#4D71FF' : '',
+                  }" name="unlike" @click="unlike(item)"></SvgIcon>
                 </div>
               </div>
             </div>
@@ -246,7 +195,7 @@ const props = defineProps({
   },
   botInfo: {
     type: Object as any,
-    default: () => {},
+    default: () => { },
   },
 });
 
@@ -363,12 +312,12 @@ const stopChat = () => {
 // Mention 的 配置项
 const mentionOptions = ref<string[]>([]);
 const getMentionOptions = async () => {
-  const res: any = await resultControl(
-    await urlResquest.getTags({
-      kb_ids: props.botInfo.kb_ids,
-    })
-  );
-  mentionOptions.value = res.tags;
+  // const res: any = await resultControl(
+  //   await urlResquest.getTags({
+  //     kb_ids: props.botInfo.kb_ids,
+  //   })
+  // );
+  mentionOptions.value = [];
 };
 onMounted(() => {
   getMentionOptions();
@@ -701,7 +650,7 @@ scrollBottom();
   background: #fff;
   font-family: PingFang SC;
   position: relative;
-  // background-color: #26293b;
+  // background-color: #1566EF;
 }
 
 .my-page {
@@ -1114,7 +1063,8 @@ scrollBottom();
   }
 }
 
-.sourceitem-leave, // 离开前,进入后透明度是1
+.sourceitem-leave,
+// 离开前,进入后透明度是1
 .sourceitem-enter-to {
   opacity: 1;
 }
@@ -1142,9 +1092,11 @@ scrollBottom();
   20% {
     transform: rotate(20deg);
   }
+
   30% {
     transform: rotate(20deg);
   }
+
   40% {
     transform: rotate(20deg);
   }
@@ -1156,12 +1108,15 @@ scrollBottom();
   60% {
     transform: rotate(0deg);
   }
+
   70% {
     transform: rotate(-15deg);
   }
+
   80% {
     transform: rotate(-30deg);
   }
+
   90% {
     transform: rotate(-15deg);
   }
@@ -1189,12 +1144,15 @@ scrollBottom();
   25% {
     transform: rotate(90deg);
   }
+
   50% {
     transform: rotate(180deg);
   }
+
   75% {
     transform: rotate(270deg);
   }
+
   100% {
     transform: rotate(360deg);
   }

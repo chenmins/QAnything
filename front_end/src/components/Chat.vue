@@ -1,15 +1,7 @@
 <template>
-  <HistoryChat
-    :observer="observer"
-    :observe-dom="observeDom"
-    :qa-observe-dom="qaObserveDom"
-    :qa-observer="qaObserver"
-    :show-loading="showLoading"
-    @scrollBottom="scrollBottom"
-    @setObserveDom="setObserveDom"
-    @setQaObserverDom="setQaObserverDom"
-    @clearHistory="clearHistory"
-  />
+  <HistoryChat :observer="observer" :observe-dom="observeDom" :qa-observe-dom="qaObserveDom" :qa-observer="qaObserver"
+    :show-loading="showLoading" @scrollBottom="scrollBottom" @setObserveDom="setObserveDom"
+    @setQaObserverDom="setQaObserverDom" @clearHistory="clearHistory" />
   <div class="container showSider">
     <div class="my-page">
       <div id="chat" ref="chatContainer" class="chat showSider">
@@ -23,76 +15,43 @@
               <img class="avatar" src="../assets/home/ai-avatar.png" alt="头像" />
               <div class="ai-content">
                 <div class="ai-right">
-                  <p
-                    class="question-text"
-                    :class="[
-                      !item.source.length && !item?.picList?.length ? 'change-radius' : '',
-                      item.showTools ? '' : 'flashing',
-                    ]"
-                  >
+                  <p class="question-text" :class="[
+                    !item.source.length && !item?.picList?.length ? 'change-radius' : '',
+                    item.showTools ? '' : 'flashing',
+                  ]">
                     <HighLightMarkDown :content="item.answer.toString()" />
-                    <ChatInfoPanel
-                      v-if="Object.keys(item?.itemInfo?.tokenInfo || {}).length"
-                      :chat-item-info="item.itemInfo"
-                    />
+                    <ChatInfoPanel v-if="Object.keys(item?.itemInfo?.tokenInfo || {}).length"
+                      :chat-item-info="item.itemInfo" />
                   </p>
                   <template v-if="item.source.length">
-                    <div
-                      :class="[
-                        'source-total',
-                        !showSourceIdxs.includes(index) ? 'source-total-last' : '',
-                      ]"
-                    >
+                    <div :class="[
+                      'source-total',
+                      !showSourceIdxs.includes(index) ? 'source-total-last' : '',
+                    ]">
                       <span v-if="language === 'zh'">
                         找到了{{ item.source.length }}个信息来源：
                       </span>
                       <span v-else> Found {{ item.source.length }} source of information </span>
-                      <SvgIcon
-                        v-show="!showSourceIdxs.includes(index)"
-                        name="down"
-                        @click="showSourceList(index)"
-                      />
-                      <SvgIcon
-                        v-show="showSourceIdxs.includes(index)"
-                        name="up"
-                        @click="hideSourceList(index)"
-                      />
+                      <SvgIcon v-show="!showSourceIdxs.includes(index)" name="down" @click="showSourceList(index)" />
+                      <SvgIcon v-show="showSourceIdxs.includes(index)" name="up" @click="hideSourceList(index)" />
                     </div>
                     <div v-show="showSourceIdxs.includes(index)" class="source-list">
-                      <div
-                        v-for="(sourceItem, sourceIndex) in item.source"
-                        :key="sourceIndex"
-                        class="data-source"
-                      >
+                      <div v-for="(sourceItem, sourceIndex) in item.source" :key="sourceIndex" class="data-source">
                         <p v-show="sourceItem.file_name" class="control">
                           <span class="tips">{{ common.dataSource }}{{ sourceIndex + 1 }}:</span>
-                          <a
-                            v-if="sourceItem.file_url.startsWith('http')"
-                            :href="sourceItem.file_url"
-                            target="_blank"
-                          >
+                          <a v-if="sourceItem.file_url.startsWith('http')" :href="sourceItem.file_url" target="_blank">
                             {{ sourceItem.file_name }}
                           </a>
-                          <span
-                            v-else
-                            :class="[
-                              'file',
-                              checkFileType(sourceItem.file_name) ? 'filename-active' : '',
-                            ]"
-                            @click="handleChatSource(sourceItem)"
-                          >
+                          <span v-else :class="[
+                            'file',
+                            checkFileType(sourceItem.file_name) ? 'filename-active' : '',
+                          ]" @click="handleChatSource(sourceItem)">
                             {{ sourceItem.file_name }}
                           </span>
-                          <SvgIcon
-                            v-show="sourceItem.showDetailDataSource"
-                            name="iconup"
-                            @click="hideDetail(item, sourceIndex)"
-                          />
-                          <SvgIcon
-                            v-show="!sourceItem.showDetailDataSource"
-                            name="icondown"
-                            @click="showDetail(item, sourceIndex)"
-                          />
+                          <SvgIcon v-show="sourceItem.showDetailDataSource" name="iconup"
+                            @click="hideDetail(item, sourceIndex)" />
+                          <SvgIcon v-show="!sourceItem.showDetailDataSource" name="icondown"
+                            @click="showDetail(item, sourceIndex)" />
                         </p>
                         <Transition name="sourceitem">
                           <div v-show="sourceItem.showDetailDataSource" class="source-content">
@@ -113,27 +72,15 @@
                       <span class="reload-text">{{ common.regenerate }}</span>
                     </div>
                     <div class="tools">
-                      <SvgIcon
-                        :style="{
-                          color: item.copied ? '#4D71FF' : '',
-                        }"
-                        name="copy"
-                        @click="myCopy(item)"
-                      ></SvgIcon>
-                      <SvgIcon
-                        :style="{
-                          color: item.like ? '#4D71FF' : '',
-                        }"
-                        name="like"
-                        @click="like(item, $event)"
-                      ></SvgIcon>
-                      <SvgIcon
-                        :style="{
-                          color: item.unlike ? '#4D71FF' : '',
-                        }"
-                        name="unlike"
-                        @click="unlike(item)"
-                      ></SvgIcon>
+                      <SvgIcon :style="{
+                        color: item.copied ? '#4D71FF' : '',
+                      }" name="copy" @click="myCopy(item)"></SvgIcon>
+                      <SvgIcon :style="{
+                        color: item.like ? '#4D71FF' : '',
+                      }" name="like" @click="like(item, $event)"></SvgIcon>
+                      <SvgIcon :style="{
+                        color: item.unlike ? '#4D71FF' : '',
+                      }" name="unlike" @click="unlike(item)"></SvgIcon>
                     </div>
                   </div>
                 </div>
@@ -157,31 +104,22 @@
               <template #content>
                 {{ selectList.length ? common.chatShare : common.chatShareNoChatId }}
               </template>
-              <span
-                :class="[
-                  'question-icon',
-                  showLoading || !selectList.length ? 'isPreventClick' : '',
-                ]"
-                @click="shareChat"
-              >
+              <span :class="[
+                'question-icon',
+                showLoading || !selectList.length ? 'isPreventClick' : '',
+              ]" @click="shareChat">
                 <SvgIcon name="chat-share" />
               </span>
             </a-popover>
             <a-popover placement="topLeft">
               <template #content>{{ common.chatToPic }}</template>
-              <span
-                :class="['question-icon', showLoading ? 'isPreventClick' : '']"
-                @click="downloadChat"
-              >
+              <span :class="['question-icon', showLoading ? 'isPreventClick' : '']" @click="downloadChat">
                 <SvgIcon name="chat-download" />
               </span>
             </a-popover>
             <a-popover>
               <template #content>{{ common.clearChat }}</template>
-              <span
-                :class="['question-icon', showLoading ? 'isPreventClick' : '']"
-                @click="deleteChat"
-              >
+              <span :class="['question-icon', showLoading ? 'isPreventClick' : '']" @click="deleteChat">
                 <SvgIcon name="chat-delete" />
               </span>
             </a-popover>
@@ -199,12 +137,7 @@
       </div>
     </div>
     <div class="scroll-btn-div">
-      <img
-        class="avatar"
-        src="@/assets/home/scroll-down.png"
-        alt="滑到底部"
-        @click="scrollBottom"
-      />
+      <img class="avatar" src="@/assets/home/scroll-down.png" alt="滑到底部" @click="scrollBottom" />
     </div>
   </div>
   <ChatSettingDialog ref="chatSettingForDialogRef" />
@@ -462,12 +395,12 @@ const beforeSend = title => {
 // Mention 的 配置项
 const mentionOptions = ref<string[]>([]);
 const getMentionOptions = async () => {
-  const res: any = await resultControl(
-    await urlResquest.getTags({
-      kb_ids: selectList.value,
-    })
-  );
-  mentionOptions.value = res.tags;
+  // const res: any = await resultControl(
+  //   await urlResquest.getTags({
+  //     kb_ids: selectList.value,
+  //   })
+  // );
+  mentionOptions.value = [];
 };
 watch(
   () => selectList,
@@ -910,7 +843,7 @@ $avatar-width: 96px;
   margin: 0 auto;
   padding: 28px 28px 0 28px;
   //border-radius: 12px 0 0 0;
-  //border-top-color: #26293b;
+  //border-top-color: #1566EF;
   display: flex;
   flex-direction: column;
   background: #f3f6fd;
@@ -1296,7 +1229,8 @@ $avatar-width: 96px;
   }
 }
 
-.sourceitem-leave, // 离开前,进入后透明度是1
+.sourceitem-leave,
+// 离开前,进入后透明度是1
 .sourceitem-enter-to {
   opacity: 1;
 }
@@ -1324,9 +1258,11 @@ $avatar-width: 96px;
   20% {
     transform: rotate(20deg);
   }
+
   30% {
     transform: rotate(20deg);
   }
+
   40% {
     transform: rotate(20deg);
   }
@@ -1338,12 +1274,15 @@ $avatar-width: 96px;
   60% {
     transform: rotate(0deg);
   }
+
   70% {
     transform: rotate(-15deg);
   }
+
   80% {
     transform: rotate(-30deg);
   }
+
   90% {
     transform: rotate(-15deg);
   }
@@ -1371,12 +1310,15 @@ $avatar-width: 96px;
   25% {
     transform: rotate(90deg);
   }
+
   50% {
     transform: rotate(180deg);
   }
+
   75% {
     transform: rotate(270deg);
   }
+
   100% {
     transform: rotate(360deg);
   }

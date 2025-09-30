@@ -1,8 +1,8 @@
 <!--
  * @Author: 祝占朋 wb.zhuzp01@rd.netease.com
  * @Date: 2023-11-01 14:57:33
- * @LastEditors: Ianarua 306781523@qq.com
- * @LastEditTime: 2024-08-02 16:52:03
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-09-15 20:07:05
  * @FilePath: front_end/src/components/Sider.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -21,9 +21,8 @@
           <template #icon>
             <img class="folder" src="../assets/home/icon-folder.png" alt="图标" />
           </template>
-          知识库管理</a-button
-        >
-      </div> -->
+知识库管理</a-button>
+</div> -->
     </div>
     <div v-else-if="navIndex === 1" class="bots">
       <div class="bots-tab" @click="changePage('/bots')">{{ getLanguage().bots.myBots }}</div>
@@ -33,19 +32,13 @@
     </div>
     <div v-else-if="navIndex === 2" class="quick-start">
       <div class="content">
-        <div
-          :class="['card-new', chatId === null ? 'active' : '', showLoading ? 'disabled' : '']"
-          @click="quickClickHandle(0)"
-        >
+        <div :class="['card-new', chatId === null ? 'active' : '', showLoading ? 'disabled' : '']"
+          @click="quickClickHandle(0)">
           <SvgIcon name="new-chat" />
           {{ getLanguage().home.newConversationQuick }}
         </div>
-        <SiderCardItem
-          v-for="item of historyList"
-          :key="item.historyId"
-          :card-data="item"
-          @click="quickClickHandle(1, item)"
-        />
+        <SiderCardItem v-for="item of historyList" :key="item.historyId" :card-data="item"
+          @click="quickClickHandle(1, item)" />
       </div>
     </div>
     <ChatSourceDialog />
@@ -188,9 +181,9 @@ onUnmounted(() => {
 .sider {
   display: flex;
   flex-direction: column;
-  width: 280px;
+  width: 200px;
   height: calc(100vh - 64px);
-  background-color: #26293b;
+  background-color: #1566EF;
 
   .knowledge {
     height: 100%;
@@ -204,7 +197,6 @@ onUnmounted(() => {
     flex-direction: column;
 
     .card-new {
-      width: 232px;
       height: 48px;
       margin: 0 auto 16px;
       border-radius: 8px;
@@ -213,7 +205,7 @@ onUnmounted(() => {
       align-items: center;
       font-size: 16px;
       overflow: hidden;
-      background: #333647;
+      background: #4488ef;
       cursor: pointer;
       color: #fff;
 
@@ -226,7 +218,7 @@ onUnmounted(() => {
     }
 
     .active {
-      background: linear-gradient(284deg, #7b5ef2 -1%, #c383fe 97%);
+      background: linear-gradient(284deg, #5e98f2 -1%, #8fbff4 97%);
     }
 
     .disabled {
@@ -247,19 +239,19 @@ onUnmounted(() => {
   }
 
   .add-btn {
-    margin: 14px 12px 20px 12px;
+    margin: 14px 12px 0px 12px;
     width: calc(100% - 24px);
 
     :deep(.ant-input-affix-wrapper) {
       padding: 4px;
       border: 1px solid #373b4d;
-      background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), #26293b;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), #1566EF;
     }
 
     :deep(.ant-input) {
       color: #ffffff;
       padding-left: 4px;
-      background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), #26293b;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), #1566EF;
 
       &::placeholder {
         color: #999999;
@@ -302,7 +294,7 @@ onUnmounted(() => {
     padding-top: 12px;
 
     .bots-tab {
-      width: 232px;
+      width: 180px;
       height: 46px;
       border-radius: 8px;
       background: #7261e9;

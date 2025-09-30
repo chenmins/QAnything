@@ -1,8 +1,8 @@
 <!--
  * @Author: 祝占朋 wb.zhuzhanpeng01@mesg.corp.netease.com
  * @Date: 2023-12-26 14:49:41
- * @LastEditors: Ianarua 306781523@qq.com
- * @LastEditTime: 2024-08-06 10:09:33
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-09-15 19:25:03
  * @FilePath: front_end/src/components/OptionList.vue
  * @Description: 
 -->
@@ -21,7 +21,7 @@
             </span>
             <span class="id"> {{ home.knowledgeID }} {{ currentId }} </span>
           </p>
-          <div v-if="navIndex === 0" class="kb-tag">
+          <!-- <div v-if="navIndex === 0" class="kb-tag">
             <a-popover trigger="click" placement="leftBottom">
               <template #content>
                 <TagsInput
@@ -32,10 +32,10 @@
                   "
                 />
               </template>
-              <a-button type="primary" style="margin-right: 10px">所有文件一键添加tag</a-button>
-            </a-popover>
-            <a-popover trigger="click" placement="leftBottom">
-              <template #content>
+<a-button type="primary" style="margin-right: 10px">所有文件一键添加tag</a-button>
+</a-popover>
+<a-popover trigger="click" placement="leftBottom">
+  <template #content>
                 <TagsInput
                   @confirm-tag="
                     newTags => {
@@ -44,9 +44,9 @@
                   "
                 />
               </template>
-              <a-button>批量添加tag</a-button>
-            </a-popover>
-          </div>
+  <a-button>批量添加tag</a-button>
+</a-popover>
+</div> -->
         </div>
         <div class="nav-info">
           <div class="navs">
@@ -73,17 +73,9 @@
           </div>
         </div>
         <div class="table">
-          <a-table
-            v-if="navIndex === 0"
-            :data-source="dataSource"
-            :columns="columns"
-            :pagination="kbPaginationConfig"
-            :locale="{ emptyText: home.emptyText }"
-            :hide-on-single-page="true"
-            :show-size-changer="false"
-            :row-selection="{ selectedRowKeys: [...selectedKeys.keys()], onSelect, onSelectAll }"
-            @change="kbOnChange"
-          >
+          <a-table v-if="navIndex === 0" :data-source="dataSource" :columns="columns" :pagination="kbPaginationConfig"
+            :locale="{ emptyText: home.emptyText }" :hide-on-single-page="true" :show-size-changer="false"
+            :row-selection="{ selectedRowKeys: [...selectedKeys.keys()], onSelect, onSelectAll }" @change="kbOnChange">
             <template #headerCell="{ column }">
               <!--            fileIdName-->
               <template v-if="column.key === 'status'">
@@ -92,11 +84,7 @@
                   <template #title>
                     {{ home.documentStatusNode }}
                   </template>
-                  <img
-                    src="@/assets/home/icon-question.png"
-                    style="width: 18px; margin-left: 5px"
-                    alt="&copy"
-                  />
+                  <img src="@/assets/home/icon-question.png" style="width: 18px; margin-left: 5px" alt="&copy" />
                 </a-tooltip>
               </template>
             </template>
@@ -111,33 +99,21 @@
                 </a-tooltip>
               </template>
               <template v-else-if="column.key === 'fileTag'">
-                <Tags
-                  v-if="record.status === 'green'"
-                  :tags="record.fileTag"
-                  @update:tags="
-                    newTags => {
-                      record.fileTag = newTags;
-                    }
-                  "
-                  @confirm-tag="
+                <Tags v-if="record.status === 'green'" :tags="record.fileTag" @update:tags="
+                  newTags => {
+                    record.fileTag = newTags;
+                  }
+                " @confirm-tag="
                     newTags => {
                       tagConfirm('file', [record.fileId], newTags);
                     }
-                  "
-                />
+                  " />
               </template>
               <template v-else-if="column.key === 'status'">
                 <div class="status-box">
                   <span class="icon-file-status">
-                    <LoadingImg
-                      v-if="record.status === 'gray' || record.status === 'yellow'"
-                      class="file-status"
-                    />
-                    <SvgIcon
-                      v-else
-                      class="file-status"
-                      :name="record.status === 'green' ? 'success' : 'error'"
-                    />
+                    <LoadingImg v-if="record.status === 'gray' || record.status === 'yellow'" class="file-status" />
+                    <SvgIcon v-else class="file-status" :name="record.status === 'green' ? 'success' : 'error'" />
                   </span>
                   <span> {{ parseStatus(record.status) }}</span>
                 </div>
@@ -151,74 +127,40 @@
                 </div>
               </template>
               <template v-else-if="column.key === 'options'">
-                <a-popconfirm
-                  overlay-class-name="del-pop"
-                  placement="topRight"
-                  :title="common.deleteTitle"
-                  :ok-text="common.confirm"
-                  :cancel-text="common.cancel"
-                  @confirm="confirm"
-                >
+                <a-popconfirm overlay-class-name="del-pop" placement="topRight" :title="common.deleteTitle"
+                  :ok-text="common.confirm" :cancel-text="common.cancel" @confirm="confirm">
                   <!-- :disabled="record.status == 'gray' || record.status === 'yellow'" -->
                   <a-button type="text" class="delete-item" @click="deleteItem(record)">
                     {{ common.delete }}
                   </a-button>
                 </a-popconfirm>
-                <a-button
-                  type="text"
-                  class="view-item"
-                  :disabled="!(record.status === 'green')"
-                  @click="viewItem(record)"
-                >
+                <a-button type="text" class="view-item" :disabled="!(record.status === 'green')"
+                  @click="viewItem(record)">
                   {{ common.view }}
                 </a-button>
               </template>
             </template>
           </a-table>
-          <a-table
-            v-else
-            :data-source="faqList"
-            :columns="qaColumns"
-            :locale="{ emptyText: home.emptyText }"
-            :loading="loading"
-            :pagination="paginationConfig"
-            @change="onChange"
-          >
+          <a-table v-else :data-source="faqList" :columns="qaColumns" :locale="{ emptyText: home.emptyText }"
+            :loading="loading" :pagination="paginationConfig" @change="onChange">
             <template #bodyCell="{ column, record }">
               <template v-if="column.key === 'status'">
                 <div class="status-box">
                   <span class="icon-file-status">
-                    <LoadingImg
-                      v-if="record.status === 'gray' || record.status === 'yellow'"
-                      class="file-status"
-                    />
-                    <SvgIcon
-                      v-else
-                      class="file-status"
-                      :name="record.status === 'green' ? 'success' : 'error'"
-                    />
+                    <LoadingImg v-if="record.status === 'gray' || record.status === 'yellow'" class="file-status" />
+                    <SvgIcon v-else class="file-status" :name="record.status === 'green' ? 'success' : 'error'" />
                   </span>
                   <span> {{ parseFaqStatus(record.status) }}</span>
                 </div>
               </template>
               <template v-else-if="column.key === 'options'">
                 <div class="options">
-                  <a-button
-                    class="edit-item"
-                    type="link"
-                    :disabled="record.status !== 'green'"
-                    @click="editQaItem(record)"
-                  >
+                  <a-button class="edit-item" type="link" :disabled="record.status !== 'green'"
+                    @click="editQaItem(record)">
                     {{ bots.edit }}
                   </a-button>
-                  <a-popconfirm
-                    overlay-class-name="qa-del-pop"
-                    placement="topRight"
-                    :title="home.deleteQaSetText"
-                    :ok-text="common.confirm"
-                    :cancel-text="common.cancel"
-                    @confirm="qaConfirm"
-                  >
+                  <a-popconfirm overlay-class-name="qa-del-pop" placement="topRight" :title="home.deleteQaSetText"
+                    :ok-text="common.confirm" :cancel-text="common.cancel" @confirm="qaConfirm">
                     <a-button class="delete-item" danger type="link" @click="deleteQaItem(record)">
                       {{ common.delete }}
                     </a-button>

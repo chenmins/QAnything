@@ -129,7 +129,7 @@ function changeEditTab(value) {
 </script>
 <style lang="scss" scoped>
 .container {
-  background-color: #26293b;
+  background-color: #1566EF;
 }
 .bot-edit {
   width: 100%;

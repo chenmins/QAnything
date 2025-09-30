@@ -1,20 +1,17 @@
 <!--
  * @Author: 祝占朋 wb.zhuzp01@rd.netease.com
  * @Date: 2023-11-10 15:02:33
- * @LastEditors: Ianarua 306781523@qq.com
- * @LastEditTime: 2024-07-24 10:19:43
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-09-30 14:48:44
  * @FilePath: front_end/src/components/Head.vue
  * @Description: 
 -->
 <template>
   <div class="header">
     <div class="logo">
-      <img
-        src="../assets/login/logo-small.png"
-        :style="{ marginTop: navIndex === -1 ? '' : '14px' }"
-        alt="logo"
-        @click="goDetail('https://ai.youdao.com/')"
-      />
+      <!-- <img src="../assets/login/logo-small.png" :style="{ marginTop: navIndex === -1 ? '' : '14px' }" alt="logo"
+        @click="goDetail('https://ai.youdao.com/')" /> -->
+      <p>企业知识库</p>
     </div>
     <div class="header-navs">
       <div
@@ -52,12 +49,12 @@
           </a-input>
         </a-popover>
       </li>
-      <li class="toggle-button">
+      <!-- <li class="toggle-button">
         <span :class="[language === 'zh' ? 'active' : '']" @click="changLanguage('zh')">中</span>
         <span class="line"></span>
         <span :class="[language === 'en' ? 'active' : '']" @click="changLanguage('en')">En</span>
-      </li>
-      <li>
+      </li> -->
+      <!-- <li>
         <a-popover placement="bottomRight">
           <template #content>
             <p>010-82558901（商务）</p>
@@ -72,7 +69,7 @@
             <span>{{ header.cooperation }}</span>
           </div>
         </a-popover>
-      </li>
+      </li> -->
       <li>
         <div class="myspan" @click="goStatistics">
           <LineChartOutlined style="margin-right: 5px" />
@@ -111,7 +108,7 @@ const navList = [
     value: 0,
   },
   {
-    name: 'Bots',
+    name: '智能体',
     value: 1,
   },
 ];
@@ -185,7 +182,7 @@ onMounted(() => {
   height: 64px;
   display: flex;
   align-items: center;
-  background: #26293b;
+  background: #1566ef;
 
   .header-navs {
     //width: 234px;
@@ -258,13 +255,18 @@ onMounted(() => {
     height: 64px;
     cursor: pointer;
     display: flex;
-    justify-content: center;
+    padding-left: 15px;
     align-items: center;
 
     img {
       width: 146px;
       height: 28px;
       //margin-top: 14px;
+    }
+
+    p {
+      color: #fff;
+      font-size: 22px;
     }
   }
 

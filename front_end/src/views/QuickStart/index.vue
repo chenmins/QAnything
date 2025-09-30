@@ -887,7 +887,7 @@ $avatar-width: 96px;
   position: relative;
   width: 100%;
   height: calc(100vh - 64px);
-  background-color: #26293b;
+  background-color: #1566EF;
 }
 
 .my-page {

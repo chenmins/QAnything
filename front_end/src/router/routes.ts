@@ -11,7 +11,7 @@ import { RouteRecordRaw } from 'vue-router';
 export const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    name: 'home',
+    name: 'home1',
     component: () => import('@/layout/index.vue'),
     redirect: '/home',
     children: [
@@ -25,7 +25,7 @@ export const routes: RouteRecordRaw[] = [
       },
       {
         path: '/bots',
-        name: 'bots',
+        name: 'bots1',
         component: () => import('@/views/bots/Bots.vue'),
         children: [
           {
@@ -38,7 +38,7 @@ export const routes: RouteRecordRaw[] = [
           },
           {
             path: '/bots/:botId/edit',
-            name: 'edit',
+            name: 'edit1',
             component: () => import('@/views/bots/children/BotEdit.vue'),
             meta: {
               requiresAuth: true,

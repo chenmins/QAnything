@@ -1,20 +1,19 @@
 <!--
  * @Author: 祝占朋 wb.zhuzhanpeng01@mesg.corp.netease.com
  * @Date: 2023-12-26 11:43:52
- * @LastEditors: 祝占朋 wb.zhuzhanpeng01@mesg.corp.netease.com
- * @LastEditTime: 2024-01-02 11:09:45
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-09-15 19:54:38
  * @FilePath: /qanything-open-source/src/components/AddInput.vue
  * @Description: 
 -->
 <template>
   <a-config-provider :theme="{ token: { colorPrimary: '#5a47e5' } }">
-    <a-input v-model:value="kb_name" class="add-input" :placeholder="common.newPlaceholder">
-      <template #prefix>
-        <a-select v-model:value="addType" size="small">
-          <a-select-option value="0">文档集</a-select-option>
-          <a-select-option value="1">问答集</a-select-option>
-        </a-select>
-      </template>
+    <a-select v-model:value="addType" size="small">
+      <a-select-option value="0">文档集</a-select-option>
+      <a-select-option value="1">问答集</a-select-option>
+    </a-select>
+    <a-input v-model:value="kb_name" class="add-input" :placeholder="common.newPlaceholder" style="margin-top: 10px">
+      <template #prefix> </template>
       <template #suffix>
         <div class="add-button" @click="addKb">{{ common.new }}</div>
         <!--        <PlusCircleOutlined />-->
@@ -54,7 +53,7 @@ const createKb = async (isFaq = false) => {
 const addType = ref('0');
 
 const addKb = async () => {
-  if (!kb_name.value.length) {
+  if (!kb_name.value.length || kb_name.value.trim().length <= 0) {
     message.error(common.errorKnowledge);
     return;
   }

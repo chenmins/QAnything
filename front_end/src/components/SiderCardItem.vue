@@ -1,15 +1,13 @@
 <!--
  * @Author: Ianarua 306781523@qq.com
  * @Date: 2024-07-23 11:10:08
- * @LastEditors: Ianarua 306781523@qq.com
- * @LastEditTime: 2024-07-31 14:03:20
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-09-15 20:05:54
  * @FilePath: front_end/src/components/SiderCardItem.vue
  * @Description: QuickStart -> SiderCard的每一项，传入HistoryList和点击函数
  -->
 <template>
-  <div
-    :class="['card', chatId === cardData.historyId ? 'active' : '', showLoading ? 'disabled' : '']"
-  >
+  <div :class="['card', chatId === cardData.historyId ? 'active' : '', showLoading ? 'disabled' : '']">
     <a-popover overlay-class-name="card-hover" placement="right">
       <template #content>
         <div class="tools-box">
@@ -78,19 +76,18 @@ const deleteKnowledgeBase = (item: IKnowledgeItem) => {
 
 <style lang="scss" scoped>
 .card {
-  width: 232px;
   overflow: hidden;
   position: relative;
-  height: 48px;
+  height: 36px;
   margin: 0 auto 16px;
   border-radius: 8px;
-  background: #333647;
+  background: #4488ef;
   cursor: pointer;
   border: 1px solid transparent;
   user-select: none;
 
   .tools-box {
-    background: #333647;
+    background: #4488ef;
 
     ul {
       width: 100%;
@@ -133,12 +130,11 @@ const deleteKnowledgeBase = (item: IKnowledgeItem) => {
   }
 
   .title {
-    height: 22px;
-    margin: 12px 1px 0 12px;
+    height: 36px;
     display: flex;
     align-items: center;
     font-size: 14px;
-    line-height: 22px;
+    line-height: 36px;
     color: #222222;
 
     .title-text {
@@ -159,7 +155,7 @@ const deleteKnowledgeBase = (item: IKnowledgeItem) => {
   .ant-popover-content {
     .ant-popover-inner {
       transform: translateY(10px);
-      background: #333647;
+      background: #4488ef;
       box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
       padding: 10px;
     }
@@ -167,7 +163,7 @@ const deleteKnowledgeBase = (item: IKnowledgeItem) => {
 }
 
 .active {
-  background: linear-gradient(284deg, #7b5ef2 -1%, #c383fe 97%);
+  background: linear-gradient(284deg, #5e98f2 -1%, #8fbff4 97%);
 }
 
 .disabled {

@@ -1,8 +1,8 @@
 <!--
  * @Author: 祝占朋 wb.zhuzp01@rd.netease.com
  * @Date: 2023-11-01 10:59:31
- * @LastEditors: Ianarua 306781523@qq.com
- * @LastEditTime: 2024-07-23 18:11:39
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-09-30 16:00:04
  * @FilePath: front_end/src/components/SiderCard.vue
  * @Description: 
 -->
@@ -15,7 +15,6 @@
       'card-option-active': currentId === item.kb_id,
     }"
     class="card"
-    :style="props.style"
     @click="selectKnowledgeBase(item)"
   >
     <a-popover overlay-class-name="card-hover" placement="right">
@@ -168,10 +167,10 @@ const list = computed(() => {
 .card {
   overflow: hidden;
   position: relative;
-  height: 48px;
+  height: 38px;
   margin: 0 auto 16px;
-  border-radius: 8px;
-  background: #333647;
+  border-radius: 5px;
+  background: #4488ef;
   cursor: pointer;
   border: 1px solid transparent;
   user-select: none;
@@ -181,9 +180,9 @@ const list = computed(() => {
     align-items: center;
     color: $title1;
     font-size: 14px;
-    height: 22px;
-    line-height: 22px;
-    margin: 12px 1px 0px 12px;
+    height: 36px;
+    line-height: 36px;
+    margin: 0 1px 0px 12px;
 
     .normal {
       .title-text {
@@ -245,7 +244,7 @@ const list = computed(() => {
 }
 
 .active {
-  background: linear-gradient(284deg, #7b5ef2 -1%, #c383fe 97%);
+  background: linear-gradient(284deg, #5e98f2 -1%, #8fbff4 97%);
 }
 
 // 切到这个知识库管理
@@ -271,10 +270,11 @@ const list = computed(() => {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  padding: 0 7px;
 }
 
 .tools-box {
-  background: #333647;
+  background: #4488ef;
 
   ul {
     width: 100%;
@@ -324,7 +324,7 @@ const list = computed(() => {
   .ant-popover-content {
     .ant-popover-inner {
       transform: translateY(10px);
-      background: #333647;
+      background: #4488ef;
       box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
       padding: 10px;
     }

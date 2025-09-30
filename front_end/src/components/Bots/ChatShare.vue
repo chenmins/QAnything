@@ -153,10 +153,33 @@
             {{ common.stop }}
           </a-button>
         </div>
-        <div class="question-box">
+
+        <div v-show="sendType == 'audio'" class="yuyin-container">
+          <img
+            class="text-icon"
+            src="@/assets/bots/jianpan.png"
+            alt=""
+            @click="changeType('text')"
+          />
+          <div class="audio-container">
+            <button
+              class="audio-btn"
+              @touchstart="handleTouchStart"
+              @touchend="handleTouchEnd"
+              @click="handleTouchStartClick"
+            >
+              {{ btnText }}
+            </button>
+          </div>
+        </div>
+
+        <div v-show="sendType == 'text'" class="question-box">
           <div class="question">
             <ChatTextarea v-model:input-value="question" :options="mentionOptions" @send="send">
-              <a-popover placement="topLeft">
+              <span class="yuyin" @click="changeType('audio')">
+                <img src="@/assets/bots/yuyin.png" alt="" />
+              </span>
+              <a-popover placement="topLeft" trigger="hover">
                 <template #content>{{ common.chatToPic }}</template>
                 <span
                   :class="['download', showLoading ? 'isPreventClick' : '']"
@@ -165,7 +188,7 @@
                   <SvgIcon name="chat-download" />
                 </span>
               </a-popover>
-              <a-popover>
+              <a-popover trigger="click">
                 <template #title>{{ common.contextLabel }}</template>
                 <template #content>
                   <a-slider
@@ -215,7 +238,23 @@
         />
       </div>
     </div>
+    <a-modal
+      v-model:visible="recordOverlayIsShow"
+      :footer="null"
+      :closable="false"
+      class="record-overlay"
+      width="100%"
+      wrap-class-name="full-modal"
+    >
+      <div class="record-overlay-container">
+        <div class="record-text" v-html="recordHtml"></div>
+        <div class="record-btn" @click.stop="handleTouchEndClick">
+          <p>{{ deviceType == 'pc' ? '点击发送' : '松开发送' }}</p>
+        </div>
+      </div>
+    </a-modal>
   </a-config-provider>
+
   <DefaultModal :content="content" :confirm-loading="confirmLoading" @ok="confirm" />
 </template>
 <script lang="ts" setup>
@@ -239,6 +278,7 @@ import ChatInfoPanel from '@/components/ChatInfoPanel.vue';
 import HighLightMarkDown from '@/components/HighLightMarkDown.vue';
 import ChatTextarea from '@/components/ChatTextarea.vue';
 import { useUser } from '@/store/useUser';
+import { XunFeiRecord } from '@/assets/js/RecordEntry.js';
 
 const props = defineProps({
   chatType: {
@@ -430,12 +470,12 @@ const beforeSend = title => {
 // Mention 的 配置项
 const mentionOptions = ref<string[]>([]);
 const getMentionOptions = async () => {
-  const res: any = await resultControl(
-    await urlResquest.getTags({
-      kb_ids: props.botInfo.kb_ids,
-    })
-  );
-  mentionOptions.value = res.tags;
+  // const res: any = await resultControl(
+  //   await urlResquest.getTags({
+  //     kb_ids: props.botInfo.kb_ids,
+  //   })
+  // );
+  mentionOptions.value = [];
 };
 onMounted(() => {
   getMentionOptions();
@@ -766,6 +806,118 @@ function getB64Type(suffix) {
   const index = supportSourceTypes.indexOf(suffix);
   return b64Types[index];
 }
+const deviceType = ref('');
+if (
+  /android|iphone|phone|ipad|ipod|windows phone|blackberry|iemobile|opera mini/i.test(
+    navigator.userAgent.toLowerCase()
+  )
+) {
+  deviceType.value = 'mobile';
+} else {
+  deviceType.value = 'pc';
+}
+const sendType = ref('text'); // 发送类型 text-文本 audio-音频
+const XunFeiRecordEx = ref(null);
+const countdownInterval = ref(null);
+const btnText = ref(deviceType.value == 'mobile' ? '按住说话' : '点击说话');
+const longPressThreshold = ref(500); // 长按时间阈值，单位毫秒
+const recordOverlayIsShow = ref(false); // 录音弹窗是否显示
+const recordText = ref(''); // 录音文本
+const recordHtml = ref("<span class='cursor-record'>|</span>"); // 录音文本显示
+const speakTime = ref(null);
+
+onMounted(() => {
+  XunFeiRecordEx.value = new XunFeiRecord();
+
+  console.log(XunFeiRecordEx.value);
+});
+
+/**
+ * @description 点击说话
+ */
+const handleTouchStartClick = () => {
+  if (deviceType.value == 'pc') {
+    handleTouchStart();
+  }
+};
+
+/**
+ * @description 点击结束录音
+ */
+const handleTouchEndClick = () => {
+  if (deviceType.value == 'pc') {
+    handleTouchEnd();
+  }
+};
+/**
+ * @description 按住说话
+ */
+const handleTouchStart = () => {
+  recordText.value = ''; // 清空录音文本
+  recordHtml.value = "<span class='cursor-record'>|</span>"; // 清空录音文本显示
+  recordOverlayIsShow.value = true;
+  speakTime.value = new Date().getTime();
+  countdownHandler(); // 录音倒计时
+  XunFeiRecordEx.value.connectWebSocket((type, recordTextTemp) => {
+    console.log(type, recordTextTemp);
+    if (type == 'pending') {
+      // 录制中
+      console.log('录制中', recordTextTemp);
+      recordHtml.value = recordTextTemp + "<span class='cursor-record'>|</span>";
+    } else if (type == 'success') {
+      // 录制结束
+      if (recordTextTemp) {
+        recordText.value = recordTextTemp;
+        recordOverlayIsShow.value = false;
+        console.log('最终发送', recordText.value);
+        question.value = recordText.value;
+        send();
+      }
+    } else if (type == 'close') {
+      // 录制结束
+      recordOverlayIsShow.value = false;
+      handleTouchEnd();
+    }
+  });
+};
+/**
+ * @description 结束录音
+ */
+const handleTouchEnd = () => {
+  recordOverlayIsShow.value = false;
+  if (new Date().getTime() - speakTime.value < longPressThreshold.value) {
+    message.warn('说话时间太短...请等待结束');
+    return;
+  } else {
+    XunFeiRecordEx.value.recordStop();
+  }
+  clearInterval(countdownInterval.value);
+  countdownInterval.value = null;
+};
+/**
+ * @description 录音倒计时
+ * @param { string } title - 标题自定义文案
+ */
+const countdownHandler = () => {
+  let seconds = 60;
+  countdownInterval.value = setInterval(() => {
+    seconds = seconds - 1;
+    if (seconds <= 0) {
+      clearInterval(countdownInterval.value);
+      countdownInterval.value = null;
+      message.warn('说话时间超过1分钟,主动停止');
+      XunFeiRecordEx.value.recordStop();
+    }
+  }, 1000);
+};
+
+/**
+ * @description 修改类型
+ * @param {string} type - text、audio
+ */
+const changeType = type => {
+  sendType.value = type;
+};
 </script>
 
 <style lang="scss" scoped>
@@ -811,7 +963,7 @@ $avatar-width: 96px;
   margin: 0 auto;
   padding: 28px 28px 0 28px;
   //border-radius: 12px 0 0 0;
-  //border-top-color: #26293b;
+  //border-top-color: #1566EF;
   display: flex;
   flex-direction: column;
   background: #f3f6fd;
@@ -1232,7 +1384,8 @@ $avatar-width: 96px;
   }
 }
 
-.sourceitem-leave, // 离开前,进入后透明度是1
+.sourceitem-leave,
+// 离开前,进入后透明度是1
 .sourceitem-enter-to {
   opacity: 1;
 }
@@ -1247,11 +1400,11 @@ $avatar-width: 96px;
   opacity: 0;
 }
 
-@media (max-width: 1023px) {
-  .chat {
-    padding: 0 1rem;
-  }
-}
+// @media (max-width: 1023px) {
+//   .chat {
+//     padding: 0 1rem;
+//   }
+// }
 
 //@media (min-width: 1500px) {
 //  .chat {
@@ -1272,9 +1425,11 @@ $avatar-width: 96px;
   20% {
     transform: rotate(20deg);
   }
+
   30% {
     transform: rotate(20deg);
   }
+
   40% {
     transform: rotate(20deg);
   }
@@ -1286,12 +1441,15 @@ $avatar-width: 96px;
   60% {
     transform: rotate(0deg);
   }
+
   70% {
     transform: rotate(-15deg);
   }
+
   80% {
     transform: rotate(-30deg);
   }
+
   90% {
     transform: rotate(-15deg);
   }
@@ -1319,14 +1477,125 @@ $avatar-width: 96px;
   25% {
     transform: rotate(90deg);
   }
+
   50% {
     transform: rotate(180deg);
   }
+
   75% {
     transform: rotate(270deg);
   }
+
   100% {
     transform: rotate(360deg);
+  }
+}
+
+.yuyin {
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 16px;
+  display: flex;
+
+  img {
+    width: 18px;
+  }
+}
+
+.yuyin-container {
+  min-height: 20px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0px 0px 24px 0px rgba(29, 36, 48, 0.06), 0px 0px 16px 0px rgba(29, 32, 39, 0.1);
+  display: flex;
+  align-items: center;
+  margin: 32px auto;
+  padding: 5px 0;
+  max-width: 720px;
+  width: 100%;
+}
+
+.text-icon {
+  width: 22px;
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+
+.audio-container {
+  flex: 1;
+  height: 34px;
+  margin-right: 12px;
+  padding: 0 10px;
+
+  .audio-btn {
+    width: 100%;
+    height: 100%;
+    background: rgba(66, 128, 250, 0.06);
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+    font-family: PingFang SC, PingFang SC-Medium;
+    text-align: center;
+    color: #406cff;
+    line-height: 22px;
+    outline: none;
+    font-weight: bold;
+    user-select: none;
+
+    &.acitve {
+      background: rgba(66, 128, 250, 0.2);
+    }
+  }
+}
+
+.record-overlay-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  user-select: none;
+
+  .record-text {
+    min-height: 80px;
+    background: #95ec69;
+    margin: 100px auto;
+    width: 80%;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 18px;
+  }
+
+  .record-btn {
+    height: 100px;
+    background: #adadad;
+    border-radius: 50% 50% 0 0;
+
+    p {
+      text-align: center;
+      font-size: 12px;
+      color: #232323;
+      margin-top: 10px;
+    }
+  }
+}
+.full-modal {
+  .ant-modal {
+    max-width: 100%;
+    top: 0;
+    padding-bottom: 0;
+    margin: 0;
+  }
+  .ant-modal-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh);
+    background-color: rgba(0, 0, 0, 0.45);
+    padding: 0;
+    border-radius: 0;
+  }
+  .ant-modal-body {
+    flex: 1;
   }
 }
 </style>

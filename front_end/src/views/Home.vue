@@ -50,7 +50,7 @@ onMounted(() => {
   //padding-top: 0;
   width: 100%;
   height: 100%;
-  background-color: #26293b;
+  background-color: #1566EF;
 
   .initing {
     width: 100%;

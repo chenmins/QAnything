@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import eslintPlugin from 'vite-plugin-eslint';
+// import eslintPlugin from 'vite-plugin-eslint';
 import viteImagemin from 'vite-plugin-imagemin';
 import { visualizer } from 'rollup-plugin-visualizer';
 import path from 'path';
@@ -95,7 +95,7 @@ export default defineConfig(({ mode }) => {
         },
       }),
       vue(),
-      eslintPlugin(),
+      // eslintPlugin(),
       createSvgIconsPlugin({
         // 指定需要缓存的图标文件夹
         iconDirs: [path.resolve(process.cwd(), 'src/assets/svg')],
@@ -139,12 +139,12 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: `dist/qanything`,
       minify: 'terser',
-      terserOptions: {
-        compress: {
-          drop_console: true, // 所有console
-          drop_debugger: true, // debugger
-        },
-      },
+      // terserOptions: {
+      //   compress: {
+      //     drop_console: true, // 所有console
+      //     drop_debugger: true, // debugger
+      //   },
+      // },
     },
 
     base: env.VITE_APP_WEB_PREFIX,
