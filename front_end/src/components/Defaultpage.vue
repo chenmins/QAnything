@@ -2,8 +2,11 @@
   <div class="default">
     <div class="box">
       <p class="title">
-        <span>{{ home.homeTitle1 }}</span
-        ><span>&nbsp;</span><span class="color">{{ home.homeTitle2 }}</span>
+        <!-- <span>{{ home.homeTitle1 }}</span
+        ><span>
+          &nbsp;</span> -->
+
+        <span class="color">{{ home.homeTitle2 }}</span>
       </p>
       <p class="desc">{{ home.defaultDec }}</p>
 
