@@ -2,7 +2,7 @@
  * @Author: 祝占朋 wb.zhuzp01@rd.netease.com
  * @Date: 2023-11-01 14:57:33
  * @LastEditors: lizhiyong
- * @LastEditTime: 2025-09-15 20:07:05
+ * @LastEditTime: 2025-10-20 19:47:58
  * @FilePath: front_end/src/components/Sider.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -32,13 +32,19 @@
     </div>
     <div v-else-if="navIndex === 2" class="quick-start">
       <div class="content">
-        <div :class="['card-new', chatId === null ? 'active' : '', showLoading ? 'disabled' : '']"
-          @click="quickClickHandle(0)">
+        <div
+          :class="['card-new', chatId === null ? 'active' : '', showLoading ? 'disabled' : '']"
+          @click="quickClickHandle(0)"
+        >
           <SvgIcon name="new-chat" />
           {{ getLanguage().home.newConversationQuick }}
         </div>
-        <SiderCardItem v-for="item of historyList" :key="item.historyId" :card-data="item"
-          @click="quickClickHandle(1, item)" />
+        <SiderCardItem
+          v-for="item of historyList"
+          :key="item.historyId"
+          :card-data="item"
+          @click="quickClickHandle(1, item)"
+        />
       </div>
     </div>
     <ChatSourceDialog />
@@ -183,7 +189,7 @@ onUnmounted(() => {
   flex-direction: column;
   width: 200px;
   height: calc(100vh - 64px);
-  background-color: #1566EF;
+  background-color: #1566ef;
 
   .knowledge {
     height: 100%;
@@ -245,13 +251,13 @@ onUnmounted(() => {
     :deep(.ant-input-affix-wrapper) {
       padding: 4px;
       border: 1px solid #373b4d;
-      background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), #1566EF;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), #1566ef;
     }
 
     :deep(.ant-input) {
       color: #ffffff;
       padding-left: 4px;
-      background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), #1566EF;
+      background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), #1566ef;
 
       &::placeholder {
         color: #999999;

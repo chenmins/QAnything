@@ -1,8 +1,8 @@
 /*
  * @Author: 祝占朋 wb.zhuzhanpeng01@mesg.corp.netease.com
  * @Date: 2024-01-09 15:28:56
- * @LastEditors: Ianarua 306781523@qq.com
- * @LastEditTime: 2024-07-31 20:21:13
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-10-20 20:26:46
  * @FilePath: front_end/src/services/urlConfig.ts
  * @Description:
  */
@@ -174,8 +174,8 @@ const urlConfig: IUrlConfig = {
     type: EUrlType.POST,
     url: '/local_doc_qa/get_bot_info',
     param: {
-      user_id: userId,
-      user_info: userPhone,
+      user_id: 'share',
+      user_info: 'share',
     },
   },
   //删除Bot
