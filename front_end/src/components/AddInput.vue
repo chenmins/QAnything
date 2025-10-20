@@ -7,7 +7,7 @@
  * @Description: 
 -->
 <template>
-  <a-config-provider :theme="{ token: { colorPrimary: '#5a47e5' } }">
+  <a-config-provider :theme="{ token: { colorPrimary: '#1566ef' } }">
     <a-select v-model:value="addType" size="small">
       <a-select-option value="0">文档集</a-select-option>
       <a-select-option value="1">问答集</a-select-option>
@@ -83,7 +83,7 @@ const addKb = async () => {
   width: 48px;
   height: 24px;
   border-radius: 4px;
-  background: #5a47e5;
+  background: #1566ef;
   font-size: 14px;
   //font-weight: 500;
   line-height: 24px;

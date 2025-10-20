@@ -2,12 +2,12 @@
  * @Author: 祝占朋 wb.zhuzhanpeng01@mesg.corp.netease.com
  * @Date: 2023-12-26 14:49:41
  * @LastEditors: lizhiyong
- * @LastEditTime: 2025-09-15 19:25:03
+ * @LastEditTime: 2025-09-30 16:28:57
  * @FilePath: front_end/src/components/OptionList.vue
  * @Description: 
 -->
 <template>
-  <a-config-provider :theme="{ token: { colorPrimary: '#5a47e5' } }">
+  <a-config-provider :theme="{ token: { colorPrimary: '#1566ef' } }">
     <div class="list-page">
       <div class="content">
         <div class="options">
@@ -73,18 +73,30 @@
           </div>
         </div>
         <div class="table">
-          <a-table v-if="navIndex === 0" :data-source="dataSource" :columns="columns" :pagination="kbPaginationConfig"
-            :locale="{ emptyText: home.emptyText }" :hide-on-single-page="true" :show-size-changer="false"
-            :row-selection="{ selectedRowKeys: [...selectedKeys.keys()], onSelect, onSelectAll }" @change="kbOnChange">
+          <a-table
+            v-if="navIndex === 0"
+            :data-source="dataSource"
+            :columns="columns"
+            :pagination="kbPaginationConfig"
+            :locale="{ emptyText: home.emptyText }"
+            :hide-on-single-page="true"
+            :show-size-changer="false"
+            :row-selection="{ selectedRowKeys: [...selectedKeys.keys()], onSelect, onSelectAll }"
+            @change="kbOnChange"
+          >
             <template #headerCell="{ column }">
               <!--            fileIdName-->
               <template v-if="column.key === 'status'">
                 <span>{{ home.documentStatus }}</span>
-                <a-tooltip color="#5a47e5">
+                <a-tooltip color="#1566ef">
                   <template #title>
                     {{ home.documentStatusNode }}
                   </template>
-                  <img src="@/assets/home/icon-question.png" style="width: 18px; margin-left: 5px" alt="&copy" />
+                  <img
+                    src="@/assets/home/icon-question.png"
+                    style="width: 18px; margin-left: 5px"
+                    alt="&copy"
+                  />
                 </a-tooltip>
               </template>
             </template>
@@ -99,21 +111,33 @@
                 </a-tooltip>
               </template>
               <template v-else-if="column.key === 'fileTag'">
-                <Tags v-if="record.status === 'green'" :tags="record.fileTag" @update:tags="
-                  newTags => {
-                    record.fileTag = newTags;
-                  }
-                " @confirm-tag="
+                <Tags
+                  v-if="record.status === 'green'"
+                  :tags="record.fileTag"
+                  @update:tags="
+                    newTags => {
+                      record.fileTag = newTags;
+                    }
+                  "
+                  @confirm-tag="
                     newTags => {
                       tagConfirm('file', [record.fileId], newTags);
                     }
-                  " />
+                  "
+                />
               </template>
               <template v-else-if="column.key === 'status'">
                 <div class="status-box">
                   <span class="icon-file-status">
-                    <LoadingImg v-if="record.status === 'gray' || record.status === 'yellow'" class="file-status" />
-                    <SvgIcon v-else class="file-status" :name="record.status === 'green' ? 'success' : 'error'" />
+                    <LoadingImg
+                      v-if="record.status === 'gray' || record.status === 'yellow'"
+                      class="file-status"
+                    />
+                    <SvgIcon
+                      v-else
+                      class="file-status"
+                      :name="record.status === 'green' ? 'success' : 'error'"
+                    />
                   </span>
                   <span> {{ parseStatus(record.status) }}</span>
                 </div>
@@ -127,40 +151,74 @@
                 </div>
               </template>
               <template v-else-if="column.key === 'options'">
-                <a-popconfirm overlay-class-name="del-pop" placement="topRight" :title="common.deleteTitle"
-                  :ok-text="common.confirm" :cancel-text="common.cancel" @confirm="confirm">
+                <a-popconfirm
+                  overlay-class-name="del-pop"
+                  placement="topRight"
+                  :title="common.deleteTitle"
+                  :ok-text="common.confirm"
+                  :cancel-text="common.cancel"
+                  @confirm="confirm"
+                >
                   <!-- :disabled="record.status == 'gray' || record.status === 'yellow'" -->
                   <a-button type="text" class="delete-item" @click="deleteItem(record)">
                     {{ common.delete }}
                   </a-button>
                 </a-popconfirm>
-                <a-button type="text" class="view-item" :disabled="!(record.status === 'green')"
-                  @click="viewItem(record)">
+                <a-button
+                  type="text"
+                  class="view-item"
+                  :disabled="!(record.status === 'green')"
+                  @click="viewItem(record)"
+                >
                   {{ common.view }}
                 </a-button>
               </template>
             </template>
           </a-table>
-          <a-table v-else :data-source="faqList" :columns="qaColumns" :locale="{ emptyText: home.emptyText }"
-            :loading="loading" :pagination="paginationConfig" @change="onChange">
+          <a-table
+            v-else
+            :data-source="faqList"
+            :columns="qaColumns"
+            :locale="{ emptyText: home.emptyText }"
+            :loading="loading"
+            :pagination="paginationConfig"
+            @change="onChange"
+          >
             <template #bodyCell="{ column, record }">
               <template v-if="column.key === 'status'">
                 <div class="status-box">
                   <span class="icon-file-status">
-                    <LoadingImg v-if="record.status === 'gray' || record.status === 'yellow'" class="file-status" />
-                    <SvgIcon v-else class="file-status" :name="record.status === 'green' ? 'success' : 'error'" />
+                    <LoadingImg
+                      v-if="record.status === 'gray' || record.status === 'yellow'"
+                      class="file-status"
+                    />
+                    <SvgIcon
+                      v-else
+                      class="file-status"
+                      :name="record.status === 'green' ? 'success' : 'error'"
+                    />
                   </span>
                   <span> {{ parseFaqStatus(record.status) }}</span>
                 </div>
               </template>
               <template v-else-if="column.key === 'options'">
                 <div class="options">
-                  <a-button class="edit-item" type="link" :disabled="record.status !== 'green'"
-                    @click="editQaItem(record)">
+                  <a-button
+                    class="edit-item"
+                    type="link"
+                    :disabled="record.status !== 'green'"
+                    @click="editQaItem(record)"
+                  >
                     {{ bots.edit }}
                   </a-button>
-                  <a-popconfirm overlay-class-name="qa-del-pop" placement="topRight" :title="home.deleteQaSetText"
-                    :ok-text="common.confirm" :cancel-text="common.cancel" @confirm="qaConfirm">
+                  <a-popconfirm
+                    overlay-class-name="qa-del-pop"
+                    placement="topRight"
+                    :title="home.deleteQaSetText"
+                    :ok-text="common.confirm"
+                    :cancel-text="common.cancel"
+                    @confirm="qaConfirm"
+                  >
                     <a-button class="delete-item" danger type="link" @click="deleteQaItem(record)">
                       {{ common.delete }}
                     </a-button>
@@ -687,7 +745,7 @@ onBeforeUnmount(() => {
     align-items: center;
     justify-content: center;
     height: 40px;
-    background: #5a47e5;
+    background: #1566ef;
     border-radius: 6px;
     padding: 8px 20px;
 
@@ -762,7 +820,7 @@ onBeforeUnmount(() => {
     .nav-item-active {
       background: #fff;
       font-weight: 500;
-      color: #5a47e5;
+      color: #1566ef;
     }
   }
 
@@ -789,7 +847,7 @@ onBeforeUnmount(() => {
       height: 40px;
       padding: 8px 20px;
       border-radius: 4px;
-      background: #5a47e5;
+      background: #1566ef;
       font-size: 16px;
       font-weight: 500;
       line-height: 24px;
@@ -803,11 +861,11 @@ onBeforeUnmount(() => {
       padding: 8px 20px;
       border-radius: 4px;
       background: #ffffff;
-      border: 1px solid #5a47e5;
+      border: 1px solid #1566ef;
       font-size: 16px;
       font-weight: 500;
       line-height: 24px;
-      color: #5a47e5;
+      color: #1566ef;
     }
   }
 }
@@ -936,7 +994,7 @@ onBeforeUnmount(() => {
 }
 
 :deep(.ant-pagination-item-active) {
-  background: #5a47e5 !important;
+  background: #1566ef !important;
   color: #fff !important;
 
   a {
@@ -949,7 +1007,7 @@ onBeforeUnmount(() => {
 }
 
 :deep(.ant-btn-link) {
-  color: #5a47e5;
+  color: #1566ef;
 }
 
 :deep(.ant-btn-link:disabled) {
@@ -976,7 +1034,7 @@ onBeforeUnmount(() => {
     }
 
     .ant-btn-primary {
-      background-color: rgba(90, 71, 229, 1) !important;
+      background-color: #1566ef !important;
       color: #ffffff;
       padding: 1px 8px;
     }
@@ -1015,7 +1073,7 @@ onBeforeUnmount(() => {
   }
 
   .ant-btn-primary {
-    background-color: rgba(90, 71, 229, 1) !important;
+    background-color: #1566ef !important;
     color: #ffffff;
     padding: 1px 8px;
   }

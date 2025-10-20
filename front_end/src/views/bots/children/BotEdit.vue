@@ -129,7 +129,7 @@ function changeEditTab(value) {
 </script>
 <style lang="scss" scoped>
 .container {
-  background-color: #1566EF;
+  background-color: #1566ef;
 }
 .bot-edit {
   width: 100%;
@@ -167,7 +167,7 @@ function changeEditTab(value) {
         cursor: pointer;
       }
       .tab-active {
-        color: #5a47e5;
+        color: #1566ef;
       }
       .tab-disable {
         color: #666666;

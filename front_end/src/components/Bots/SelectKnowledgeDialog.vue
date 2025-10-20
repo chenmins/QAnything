@@ -152,7 +152,7 @@ const toCreatekb = () => {
       height: 32px;
       padding: 0 12px !important;
       text-align: center;
-      background: #5a47e5 !important;
+      background: #1566ef !important;;
     }
   }
   .content {
@@ -192,7 +192,7 @@ const toCreatekb = () => {
         font-size: 14px;
         text-align: center;
         line-height: 32px;
-        color: #5a47e5;
+        color: #1566ef;
         cursor: pointer;
       }
       .button-0::after {

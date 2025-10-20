@@ -256,7 +256,7 @@ function resetObserve() {
     }
 
     .new-active {
-      color: #5a47e5;
+      color: #1566ef;
     }
 
     .chat-item {
@@ -299,7 +299,7 @@ function resetObserve() {
 
     .item-active {
       span {
-        color: #5a47e5;
+        color: #1566ef;
       }
     }
   }

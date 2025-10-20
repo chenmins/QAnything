@@ -8,7 +8,7 @@
  -->
 <template>
   <Teleport to="body">
-    <a-config-provider :theme="{ token: { colorPrimary: '#5a47e5' } }">
+    <a-config-provider :theme="{ token: { colorPrimary: '#1566ef' } }">
       <a-modal
         v-model:open="showChunkModel"
         title="切片分析结果"

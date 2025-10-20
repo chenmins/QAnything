@@ -841,7 +841,7 @@ $avatar-width: 96px;
   position: relative;
   height: 100%;
   margin: 0 auto;
-  padding: 28px 28px 0 28px;
+  padding: 14px 14px 0 14px;
   //border-radius: 12px 0 0 0;
   //border-top-color: #1566EF;
   display: flex;
@@ -999,7 +999,7 @@ $avatar-width: 96px;
       }
 
       .filename-active {
-        color: #5a47e5;
+        color: #1566ef;
         text-decoration: underline;
         cursor: pointer;
       }
@@ -1012,7 +1012,7 @@ $avatar-width: 96px;
       }
 
       a {
-        color: #5a47e5;
+        color: #1566ef;
         text-decoration: underline;
         cursor: pointer;
       }
@@ -1028,7 +1028,7 @@ $avatar-width: 96px;
         cursor: pointer;
         align-items: center;
         margin-right: auto;
-        color: #5a47e5;
+        color: #1566ef;
 
         .reload-text {
           height: 22px;
@@ -1099,7 +1099,7 @@ $avatar-width: 96px;
       &:hover,
       &:focus,
       &:active {
-        border-color: #5a47e5 !important;
+        border-color: #1566ef !important;;
         box-shadow: none !important;
       }
     }
@@ -1176,9 +1176,9 @@ $avatar-width: 96px;
         color: #666666;
 
         &:hover {
-          //border: 1px solid #5a47e5;
+          //border: 1px solid #1566ef;
           background-color: #e5e5e5;
-          color: #5a47e5;
+          color: #1566ef;
         }
 
         svg {

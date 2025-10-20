@@ -115,7 +115,7 @@ const deleteBot = async data => {
     .new-bot-text {
       font-size: 18px;
       font-weight: 500;
-      color: #7261e9;
+       color: #1566ef;
     }
   }
   .top-info {

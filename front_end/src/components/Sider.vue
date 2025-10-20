@@ -297,7 +297,7 @@ onUnmounted(() => {
       width: 180px;
       height: 46px;
       border-radius: 8px;
-      background: #7261e9;
+      background: linear-gradient(284deg, #5e98f2 -1%, #8fbff4 97%);
       font-family: PingFang SC;
       font-size: 16px;
       font-weight: 500;

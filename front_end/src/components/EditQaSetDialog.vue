@@ -449,7 +449,7 @@ const handleCancel = () => {
     }
     .tab-item-active {
       font-weight: 500;
-      color: #5a47e5;
+      color: #1566ef;
     }
   }
   .upload-content {
@@ -475,7 +475,7 @@ const handleCancel = () => {
       a {
         font-size: 14px;
         font-weight: normal;
-        color: #5a47e5;
+        color: #1566ef;
         margin-right: 8px;
       }
     }
@@ -526,7 +526,7 @@ const handleCancel = () => {
         }
 
         .blue {
-          color: #5a47e5;
+          color: #1566ef;
           cursor: pointer;
         }
       }
@@ -679,7 +679,7 @@ const handleCancel = () => {
       // width: 68px;
       height: 32px;
       padding: 0 20px;
-      background: #5a47e5 !important;
+      background: #1566ef !important;;
     }
   }
   :deep(.ant-upload-list) {

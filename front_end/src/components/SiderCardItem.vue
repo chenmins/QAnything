@@ -117,7 +117,7 @@ const deleteKnowledgeBase = (item: IKnowledgeItem) => {
         }
 
         &:hover {
-          background: #1e212f;
+          background: #1855ec;
           color: #fff;
           border-radius: 12px;
 

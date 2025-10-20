@@ -46,7 +46,7 @@ const { setNewBotsVisible } = useBots();
     }
 
     span:nth-child(2) {
-      color: #5a47e5;
+      color: #1566ef;
     }
   }
 
@@ -75,7 +75,7 @@ const { setNewBotsVisible } = useBots();
       width: 128px;
       height: 40px;
       border-radius: 6px;
-      background: #5a47e5;
+      background: #1566ef;
       font-size: 16px;
       font-weight: 500;
       color: #fff;

@@ -34,7 +34,7 @@ type ChartDataType = {
 };
 
 type ChartOptionsType = {
-  lineColor: string; // 十六进制, 默认'#5a47e5'
+  lineColor: string; // 十六进制, 默认'#1566ef'
   name?: string; // tooltip显示的名称, 默认'数量'
 };
 
@@ -70,7 +70,7 @@ const initChart = () => {
       // symbolSize: 8, //小圆点的大小
       name: list?.options?.name || '数量', // tooltip显示的名称
       itemStyle: {
-        color: list?.options?.lineColor || '#5a47e5', //小圆点和线的颜色
+        color: list?.options?.lineColor || '#1566ef', //小圆点和线的颜色
       },
       areaStyle: {
         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [

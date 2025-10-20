@@ -831,7 +831,7 @@ scrollBottom();
       }
 
       .filename-active {
-        color: #5a47e5;
+        color: #1566ef;
         text-decoration: underline;
         cursor: pointer;
       }
@@ -844,7 +844,7 @@ scrollBottom();
       }
 
       a {
-        color: #5a47e5;
+        color: #1566ef;
         text-decoration: underline;
         cursor: pointer;
       }
@@ -871,7 +871,7 @@ scrollBottom();
         cursor: pointer;
         align-items: center;
         margin-right: auto;
-        color: #5a47e5;
+        color: #1566ef;
 
         .reload-text {
           height: 22px;
@@ -963,8 +963,8 @@ scrollBottom();
       color: #666666;
 
       &:hover {
-        border: 1px solid #5a47e5;
-        color: #5a47e5;
+        border: 1px solid #1566ef;
+        color: #1566ef;
       }
 
       svg {
@@ -973,8 +973,8 @@ scrollBottom();
       }
 
       &.network-true {
-        border: 1px solid #5a47e5;
-        color: #5a47e5;
+        border: 1px solid #1566ef;
+        color: #1566ef;
       }
 
       &.network-false {
@@ -988,7 +988,7 @@ scrollBottom();
       height: 36px;
       border-radius: 8px;
       color: #fff;
-      background: #5a47e5;
+      background: #1566ef;
 
       :deep(.ant-btn-primary) {
         height: 100%;
@@ -1018,7 +1018,7 @@ scrollBottom();
       &:hover,
       &:focus,
       &:active {
-        border-color: #5a47e5 !important;
+        border-color: #1566ef !important;;
         box-shadow: none !important;
       }
     }

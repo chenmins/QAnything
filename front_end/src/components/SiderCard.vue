@@ -2,7 +2,7 @@
  * @Author: 祝占朋 wb.zhuzp01@rd.netease.com
  * @Date: 2023-11-01 10:59:31
  * @LastEditors: lizhiyong
- * @LastEditTime: 2025-09-30 16:00:04
+ * @LastEditTime: 2025-09-30 16:54:14
  * @FilePath: front_end/src/components/SiderCard.vue
  * @Description: 
 -->
@@ -200,7 +200,7 @@ const list = computed(() => {
 
       .title-text {
         width: 160px;
-        height: 28px;
+        height: 36px;
         color: #ffffff;
 
         :deep(.ant-input) {
@@ -227,8 +227,8 @@ const list = computed(() => {
 
       :deep(.ant-input) {
         color: #999999;
-        background: #1e212f;
-        border-color: #7261e9;
+        background: #1855ec;
+        border-color: #1566ef;
       }
     }
   }
@@ -304,7 +304,7 @@ const list = computed(() => {
       }
 
       &:hover {
-        background: #1e212f;
+        background: #1855ec;
         color: #fff;
         border-radius: 12px;
 

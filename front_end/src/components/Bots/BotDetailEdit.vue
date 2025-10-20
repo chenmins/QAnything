@@ -207,7 +207,7 @@ defineExpose({ handleOk });
       width: 68px;
       height: 32px;
       font-size: 14px;
-      background: #5a47e5 !important;
+      background: #1566ef !important;;
       margin-top: 5px;
     }
   }
@@ -246,8 +246,8 @@ defineExpose({ handleOk });
       }
 
       .model-item-active {
-        color: #5a47e5;
-        border: 1px solid #5a47e5;
+        color: #1566ef;
+        border: 1px solid #1566ef;
         background: #eeecfc;
         font-weight: 500;
       }

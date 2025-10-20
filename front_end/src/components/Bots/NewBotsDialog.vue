@@ -169,8 +169,8 @@ const onFinishFailed = (errorInfo: any) => {
       cursor: pointer;
     }
     .item-active {
-      border-color: #5a47e5;
-      color: #5a47e5;
+      border-color: #1566ef;
+      color: #1566ef;
     }
   }
   .footer {
@@ -186,7 +186,7 @@ const onFinishFailed = (errorInfo: any) => {
       // width: 68px;
       height: 32px;
       padding: 0 20px;
-      background: #5a47e5 !important;
+      background: #1566ef !important;;
     }
   }
 }

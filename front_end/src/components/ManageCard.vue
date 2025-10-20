@@ -155,7 +155,7 @@ const getDetails = async () => {
 
       .title-text {
         width: 168px;
-        height: 28px;
+        height: 36px;
 
         :deep(.ant-input) {
           padding: 2px 11px;

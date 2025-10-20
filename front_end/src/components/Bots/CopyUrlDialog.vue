@@ -4,7 +4,7 @@
       v-model:open="copyUrlVisible"
       :title="bots.copyLink"
       centered
-      :destroyOnClose="true"
+      :destroy-on-close="true"
       wrap-class-name="select-knowledge-modal"
       :footer="null"
     >
@@ -16,7 +16,7 @@
         </div>
         <div class="title">{{ bots.qrCode }}</div>
         <div class="qr-code-content">
-          <a-qrcode ref="qrcode" :value="webUrl" bgColor="#fff" />
+          <a-qrcode ref="qrcode" :value="webUrl" bg-color="#fff" />
           <a-button class="btn save-btn" @click="saveQrCode">{{ bots.save }}</a-button>
           <!-- <a-button class="btn" @click="copyQrcode">{{ bots.copy }}</a-button> -->
         </div>
@@ -90,7 +90,7 @@ const saveQrCode = async () => {
     border: 1px solid #dfe3eb;
     border-radius: 4px;
     background: #fff;
-    color: #5a47e5;
+    color: #1566ef;
     margin-left: 18px;
   }
   .save-btn {

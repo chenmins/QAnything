@@ -1,5 +1,5 @@
 <template>
-  <a-config-provider :theme="{ token: { colorPrimary: '#5a47e5' } }">
+  <a-config-provider :theme="{ token: { colorPrimary: '#1566ef' } }">
     <a-form
       ref="formRef"
       :model="chatSettingForm"
@@ -519,7 +519,7 @@ onBeforeMount(() => {
 
 :deep(.ant-select-item-option-selected) {
   background: #eeecfc !important;
-  color: #5a47e5 !important;
+  color: #1566ef !important;;
 }
 
 :deep(.ant-btn-primary) {
@@ -528,7 +528,7 @@ onBeforeMount(() => {
 
 :deep(.ant-slider-track) {
   height: 8px;
-  background: #8868f1;
+  background: #1566ef;
   border-radius: 30px;
 }
 
@@ -544,7 +544,7 @@ onBeforeMount(() => {
 
 :deep(.ant-slider-handle) {
   &::after {
-    box-shadow: 0 0 0 2px #8868f1;
+    box-shadow: 0 0 0 2px  #1566ef;
     inset-block-start: 1px;
   }
 }
@@ -564,7 +564,7 @@ onBeforeMount(() => {
 //    :where(.css-dev-only-do-not-override-19iuou).ant-checkbox:not(.ant-checkbox-disabled):hover
 //      .ant-checkbox-inner
 //  ) {
-//  border-color: #5a47e5 !important;
+//  border-color: #1566ef !important;;
 //}
 //
 //// 选中hover
@@ -575,8 +575,8 @@ onBeforeMount(() => {
 //      .ant-checkbox-checked:not(.ant-checkbox-disabled)
 //      .ant-checkbox-inner
 //  ) {
-//  background-color: #5a47e5;
-//  border-color: #5a47e5 !important;
+//  background-color: #1566ef;
+//  border-color: #1566ef !important;;
 //}
 //
 //// 选中外圈hover
@@ -586,13 +586,13 @@ onBeforeMount(() => {
 //      ):hover
 //      .ant-checkbox-checked:not(.ant-checkbox-disabled):after
 //  ) {
-//  border-color: #5a47e5 !important;
+//  border-color: #1566ef !important;;
 //}
 //
 //// 选中正常
 //:deep(:where(.css-dev-only-do-not-override-19iuou).ant-checkbox-checked .ant-checkbox-inner) {
-//  background-color: #5a47e5;
-//  border-color: #5a47e5 !important;
+//  background-color: #1566ef;
+//  border-color: #1566ef !important;;
 //}
 //
 //:deep(
@@ -601,22 +601,22 @@ onBeforeMount(() => {
 //      ):hover
 //      .ant-checkbox-inner
 //  ) {
-//  background-color: #5a47e5 !important;
+//  background-color:  #1566ef !important;
 //}
 //
-////background-color: #5a47e5;
-////border-color: #5a47e5 !important;
+////background-color: #1566ef;
+////border-color: #1566ef !important;;
 //
 :deep(.ant-slider-handle:hover::after) {
-  box-shadow: 0 0 0 4px #5a47e5;
+  box-shadow: 0 0 0 4px #1566ef;
 }
 
 //:deep(.ant-slider-handle::after) {
-//  box-shadow: 0 0 0 4px #5a47e5;
+//  box-shadow: 0 0 0 4px #1566ef;
 //}
 
 :deep(.ant-slider:hover .ant-slider-track) {
-  background-color: #5a47e5;
+  background-color: #1566ef;
 }
 
 .ollama-token {

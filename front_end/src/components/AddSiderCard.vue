@@ -1,8 +1,8 @@
 <!--
  * @Author: 祝占朋 wb.zhuzhanpeng01@mesg.corp.netease.com
  * @Date: 2023-12-11 14:45:05
- * @LastEditors: 祝占朋 wb.zhuzhanpeng01@mesg.corp.netease.com
- * @LastEditTime: 2023-12-11 16:13:21
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-09-30 16:54:23
  * @FilePath: /ai-demo/src/components/AddSiderCard.vue
  * @Description: 
 -->
@@ -83,7 +83,7 @@ const close = () => {
 
       .title-text {
         width: 168px;
-        height: 28px;
+        height: 36px;
 
         :deep(.ant-input) {
           padding: 2px 11px;

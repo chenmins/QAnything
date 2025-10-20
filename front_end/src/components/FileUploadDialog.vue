@@ -1,8 +1,8 @@
 <!--
  * @Author: 祝占朋 wb.zhuzp01@rd.netease.com
  * @Date: 2023-11-07 19:32:26
- * @LastEditors: Ianarua 306781523@qq.com
- * @LastEditTime: 2024-08-05 17:48:27
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-10-09 07:21:14
  * @FilePath: front_end/src/components/FileUploadDialog.vue
  * @Description:
 -->
@@ -453,7 +453,7 @@ onBeforeUnmount(() => {
     }
 
     .blue {
-      color: #5a47e5;
+      color: #1566ef;
       cursor: pointer;
     }
   }

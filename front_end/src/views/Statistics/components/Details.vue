@@ -358,7 +358,7 @@ onMounted(() => {
 
     &.export-all {
       color: #ffffff;
-      background: #5a47e5;
+      background: #1566ef;
       margin-left: 16px;
     }
   }
