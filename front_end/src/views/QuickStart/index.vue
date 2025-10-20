@@ -1,8 +1,8 @@
 <!--
  * @Author: Ianarua 306781523@qq.com
  * @Date: 2024-07-22 16:10:06
- * @LastEditors: Ianarua 306781523@qq.com
- * @LastEditTime: 2024-08-05 16:56:13
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-10-20 17:29:46
  * @FilePath: front_end/src/views/QuickStart/index.vue
  * @Description: 快速开始，每个对话对应一个知识库（自动创建），传文件自动放入该对话对应的知识库
  -->
@@ -887,7 +887,7 @@ $avatar-width: 96px;
   position: relative;
   width: 100%;
   height: calc(100vh - 64px);
-  background-color: #1566EF;
+  background-color: #1566ef;
 }
 
 .my-page {
@@ -954,7 +954,7 @@ $avatar-width: 96px;
       font-weight: normal;
       line-height: 22px;
       color: #222222;
-      background: #e9e1ff;
+      background: #e1e7ff;
       border-radius: 12px;
       word-wrap: break-word;
     }
@@ -1171,7 +1171,7 @@ $avatar-width: 96px;
       &:hover,
       &:focus,
       &:active {
-        border-color: #1566ef !important;;
+        border-color: #1566ef !important;
         box-shadow: none !important;
       }
     }
@@ -1267,7 +1267,7 @@ $avatar-width: 96px;
         display: flex;
         justify-content: center;
         align-items: center;
-        background: linear-gradient(300deg, #7b5ef2 1%, #c383fe 97%);
+        background: linear-gradient(300deg, #4c84ff 1%, #4c84ff 97%);
       }
 
       :deep(.ant-btn-primary:disabled) {
@@ -1275,7 +1275,7 @@ $avatar-width: 96px;
         display: flex;
         justify-content: center;
         align-items: center;
-        background: linear-gradient(300deg, #7b5ef2 1%, #c383fe 97%);
+        background: linear-gradient(300deg, #4c84ff 1%, #94b3f8 97%);
         color: #fff !important;
         border-color: transparent !important;
       }

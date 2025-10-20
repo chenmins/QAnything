@@ -38,77 +38,7 @@
                         :chat-item-info="item.itemInfo"
                       />
                     </p>
-                    <template v-if="item.source.length">
-                      <div
-                        :class="[
-                          'source-total',
-                          !showSourceIdxs.includes(index) ? 'source-total-last' : '',
-                        ]"
-                      >
-                        <span v-if="language === 'zh'">
-                          找到了{{ item.source.length }}个信息来源：
-                        </span>
-                        <span v-else> Found {{ item.source.length }} source of information </span>
-                        <SvgIcon
-                          v-show="!showSourceIdxs.includes(index)"
-                          name="down"
-                          @click="showSourceList(index)"
-                        />
-                        <SvgIcon
-                          v-show="showSourceIdxs.includes(index)"
-                          name="up"
-                          @click="hideSourceList(index)"
-                        />
-                      </div>
-                      <div v-show="showSourceIdxs.includes(index)" class="source-list">
-                        <div
-                          v-for="(sourceItem, sourceIndex) in item.source"
-                          :key="sourceIndex"
-                          class="data-source"
-                        >
-                          <p v-show="sourceItem.file_name" class="control">
-                            <span class="tips">{{ common.dataSource }}{{ sourceIndex + 1 }}:</span>
-                            <a
-                              v-if="sourceItem.file_url.startsWith('http')"
-                              :href="sourceItem.file_url"
-                              target="_blank"
-                            >
-                              {{ sourceItem.file_name }}
-                            </a>
-                            <span
-                              v-else
-                              :class="[
-                                'file',
-                                checkFileType(sourceItem.file_name) ? 'filename-active' : '',
-                              ]"
-                              @click="handleChatSource(sourceItem)"
-                            >
-                              {{ sourceItem.file_name }}
-                            </span>
-                            <SvgIcon
-                              v-show="sourceItem.showDetailDataSource"
-                              name="iconup"
-                              @click="hideDetail(item, sourceIndex)"
-                            />
-                            <SvgIcon
-                              v-show="!sourceItem.showDetailDataSource"
-                              name="icondown"
-                              @click="showDetail(item, sourceIndex)"
-                            />
-                          </p>
-                          <Transition name="sourceitem">
-                            <div v-show="sourceItem.showDetailDataSource" class="source-content">
-                              <!--                            <p v-html="sourceItem.content?.replaceAll('\n', '<br/>')"></p>-->
-                              <HighLightMarkDown :content="sourceItem.content" />
-                              <p class="score">
-                                <span class="tips">{{ common.correlation }}</span>
-                                {{ sourceItem.score }}
-                              </p>
-                            </div>
-                          </Transition>
-                        </div>
-                      </div>
-                    </template>
+
                     <div v-if="item.showTools" class="feed-back">
                       <div class="reload-box" @click="reAnswer(item)">
                         <SvgIcon name="reload"></SvgIcon>
@@ -441,6 +371,7 @@ const addAnswer = (question: string) => {
     unlike: false,
     source: [],
     showTools: false,
+    showThink: true,
   });
 };
 
@@ -590,7 +521,6 @@ const send = async () => {
         }
       },
       onmessage(msg: { data: string }) {
-        console.log('message', msg);
         const res: any = JSON.parse(msg.data);
         if (res?.code == 200 && res?.response && res.msg === 'success') {
           // 中间的回答
@@ -602,8 +532,8 @@ const send = async () => {
           // 最后一次回答
           const timeObj = res.time_record.time_usage;
           delete timeObj['retriever_search_by_milvus'];
-          chatInfoClass.addTime(res.time_record.time_usage);
-          chatInfoClass.addToken(res.time_record.token_usage);
+          // chatInfoClass.addTime(res.time_record.time_usage);
+          // chatInfoClass.addToken(res.time_record.token_usage);
           chatInfoClass.addDate(Date.now());
         }
 
@@ -626,6 +556,7 @@ const send = async () => {
         QA_List.value[QA_List.value.length - 1].showTools = true;
         // 将chat info添加进回答中
         QA_List.value.at(-1).itemInfo = chatInfoClass.getChatInfo();
+        console.log(QA_List.value);
         nextTick(() => {
           scrollBottom();
         });
@@ -1013,7 +944,7 @@ $avatar-width: 96px;
       font-weight: normal;
       line-height: 22px;
       color: #222222;
-      background: #e9e1ff;
+      background: #e1e7ff;
       border-radius: 12px;
       word-wrap: break-word;
     }
@@ -1226,7 +1157,7 @@ $avatar-width: 96px;
       &:hover,
       &:focus,
       &:active {
-        border-color: #1566ef !important;;
+        border-color: #1566ef !important;
         box-shadow: none !important;
       }
     }
@@ -1324,7 +1255,7 @@ $avatar-width: 96px;
         display: flex;
         justify-content: center;
         align-items: center;
-        background: linear-gradient(300deg, #7b5ef2 1%, #c383fe 97%);
+        background: linear-gradient(300deg, #4c84ff 1%, #4c84ff 97%);
       }
 
       :deep(.ant-btn-primary:disabled) {
@@ -1332,7 +1263,7 @@ $avatar-width: 96px;
         display: flex;
         justify-content: center;
         align-items: center;
-        background: linear-gradient(300deg, #7b5ef2 1%, #c383fe 97%);
+        background: linear-gradient(300deg, #4c84ff 1%, #94b3f8 97%);
         color: #fff !important;
         border-color: transparent !important;
       }

@@ -45,6 +45,7 @@ watch(
   () => props.content,
   newvalue => {
     html.value = md.render(newvalue);
+    console.log('子组件', newvalue, html.value);
   },
   { immediate: true }
 );
