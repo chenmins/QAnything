@@ -2,7 +2,7 @@
  * @Author: 祝占朋 wb.zhuzp01@rd.netease.com
  * @Date: 2023-11-01 10:59:31
  * @LastEditors: lizhiyong
- * @LastEditTime: 2025-09-30 16:54:14
+ * @LastEditTime: 2025-10-21 10:58:15
  * @FilePath: front_end/src/components/SiderCard.vue
  * @Description: 
 -->
@@ -38,18 +38,25 @@
       </template>
       <div class="content">
         <div class="title">
+          <img
+            v-if="item.kb_id.includes('FAQ')"
+            src="@/assets/home/icon-que.png"
+            alt=""
+            class="type-icon"
+          />
+          <img v-else src="@/assets/home/icon-doc.png" alt="" class="type-icon" />
           <div v-show="!item.edit" class="normal">
             <p class="title-text">{{ item.kb_name }}</p>
           </div>
 
           <div v-show="item.edit" class="editing">
             <p class="title-text">
-              <a-input v-model:value="item.kb_name" type="text"></a-input>
+              <a-input v-model:value="item.kb_name" type="text" @blur="ok(item)"></a-input>
             </p>
-            <span class="icon-box">
+            <!-- <span class="icon-box">
               <SvgIcon class="edit" name="card-confirm" @click.stop="ok(item)"></SvgIcon>
               <SvgIcon class="delete" name="card-cancel" @click.stop="close(item)"></SvgIcon>
-            </span>
+            </span> -->
           </div>
         </div>
         <!--        <div class="time">{{ item.createTime }}</div>-->
@@ -183,7 +190,14 @@ const list = computed(() => {
     height: 36px;
     line-height: 36px;
     margin: 0 1px 0px 12px;
-
+    position: relative;
+    .type-icon {
+      width: 14px;
+      position: absolute;
+      left: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
     .normal {
       .title-text {
         width: 169px;
@@ -191,6 +205,7 @@ const list = computed(() => {
         white-space: nowrap;
         text-overflow: ellipsis;
         color: #ffffff;
+        padding-left: 6px;
       }
     }
 
@@ -199,7 +214,7 @@ const list = computed(() => {
       align-items: center;
 
       .title-text {
-        width: 160px;
+        width: 150px;
         height: 36px;
         color: #ffffff;
 

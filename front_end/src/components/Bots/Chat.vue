@@ -6,14 +6,14 @@
         {{ botInfo.bot_name }}
       </div>
       <div id="chat" class="chat">
-        <ul id="chat-ul" ref="scrollDom">
+        <div id="chat-ul" ref="scrollDom">
           <div class="ai">
             <div class="content">
               <img class="avatar" src="@/assets/home/ai-avatar.png" alt="头像" />
               <p class="question-text" v-html="botInfo.welcome_message"></p>
             </div>
           </div>
-          <li v-for="(item, index) in QA_List" :key="index">
+          <div v-for="(item, index) in QA_List" :key="index">
             <div v-if="item.type === 'user'" class="user">
               <img class="avatar" src="@/assets/home/avatar.png" alt="头像" />
               <p class="question-text">{{ item.question }}</p>
@@ -29,7 +29,12 @@
                     item.showTools ? '' : 'flashing',
                   ]"
                 >
-                  <HighLightMarkDown v-if="item.answer" :content="item.answer" />
+                  <HighLightMarkDown
+                    v-if="item.answer"
+                    :content="item.answer"
+                    :show-think="item.showThink"
+                    @changeShowThink="changeShowThinkHandler(item)"
+                  />
                   <span v-else>{{ item.answer }}</span>
                   <ChatInfoPanel
                     v-if="Object.keys(item?.itemInfo?.tokenInfo || {}).length"
@@ -49,74 +54,6 @@
                   ]"
                 >
                   <a-image :width="150" :src="picItem" class="responsive-image" />
-                </div>
-              </template>
-              <template v-if="item.source.length">
-                <div
-                  :class="[
-                    'source-total',
-                    !showSourceIdxs.includes(index) ? 'source-total-last' : '',
-                  ]"
-                >
-                  <span v-if="language === 'zh'">找到了{{ item.source.length }}个信息来源：</span>
-                  <span v-else>Found {{ item.source.length }} source of information</span>
-                  <SvgIcon
-                    v-show="!showSourceIdxs.includes(index)"
-                    name="down"
-                    @click="showSourceList(index)"
-                  />
-                  <SvgIcon
-                    v-show="showSourceIdxs.includes(index)"
-                    name="up"
-                    @click="hideSourceList(index)"
-                  />
-                </div>
-                <div v-show="showSourceIdxs.includes(index)" class="source-list">
-                  <div
-                    v-for="(sourceItem, sourceIndex) in item.source"
-                    :key="sourceIndex"
-                    class="data-source"
-                  >
-                    <p v-show="sourceItem.file_name" class="control">
-                      <span class="tips">{{ common.dataSource }}{{ sourceIndex + 1 }}:</span>
-                      <a
-                        v-if="sourceItem.file_id.startsWith('http')"
-                        :href="sourceItem.file_id"
-                        target="_blank"
-                      >
-                        {{ sourceItem.file_name }}
-                      </a>
-                      <span
-                        v-else
-                        :class="[
-                          'file',
-                          checkFileType(sourceItem.file_name) ? 'filename-active' : '',
-                        ]"
-                        @click="handleChatSource(sourceItem)"
-                      >
-                        {{ sourceItem.file_name }}
-                      </span>
-                      <SvgIcon
-                        v-show="sourceItem.showDetailDataSource"
-                        name="iconup"
-                        @click="hideDetail(item, sourceIndex)"
-                      />
-                      <SvgIcon
-                        v-show="!sourceItem.showDetailDataSource"
-                        name="icondown"
-                        @click="showDetail(item, sourceIndex)"
-                      />
-                    </p>
-                    <Transition name="sourceitem">
-                      <div v-show="sourceItem.showDetailDataSource" class="source-content">
-                        <p v-html="sourceItem.content?.replaceAll('\n', '<br/>')"></p>
-                        <p class="score">
-                          <span class="tips">{{ common.correlation }}</span
-                          >{{ sourceItem.score }}
-                        </p>
-                      </div>
-                    </Transition>
-                  </div>
                 </div>
               </template>
               <div v-if="item.showTools" class="feed-back">
@@ -149,7 +86,7 @@
                 </div>
               </div>
             </div>
-          </li>
+          </div>
           <div v-show="showLoading" class="stop-placeholder"></div>
           <div v-show="showLoading" ref="stopBtn" class="stop-btn">
             <a-button @click="stopChat">
@@ -159,7 +96,7 @@
               {{ common.stop }}
             </a-button>
           </div>
-        </ul>
+        </div>
       </div>
       <div class="question-box">
         <div class="question">
@@ -346,6 +283,7 @@ const addAnswer = (question: string) => {
     source: [],
     picList: null,
     showTools: false,
+    showThink: true,
   });
 };
 
@@ -463,24 +401,23 @@ const send = async () => {
       }
     },
     onmessage(msg: { data: string }) {
-      console.log('message');
       const res: any = JSON.parse(msg.data);
-      console.log(res);
       if (res?.code == 200 && res?.response && res.msg === 'success') {
         // QA_List.value[QA_List.value.length - 1].answer += res.result.response;
-        typewriter.add(res?.response.replaceAll('\n', '<br/>'));
+        typewriter.add(res?.response.replaceAll('\n', '\n'));
         scrollBottom();
       } else {
         const timeObj = res.time_record.time_usage;
         delete timeObj['retriever_search_by_milvus'];
-        chatInfoClass.addTime(res.time_record.time_usage);
-        chatInfoClass.addToken(res.time_record.token_usage);
+        // chatInfoClass.addTime(res.time_record.time_usage);
+        // chatInfoClass.addToken(res.time_record.token_usage);
         chatInfoClass.addDate(Date.now());
       }
 
-      if (res?.source_documents?.length) {
-        QA_List.value[QA_List.value.length - 1].source = res?.source_documents;
-      }
+      // if (res?.source_documents?.length) {
+      //   QA_List.value[QA_List.value.length - 1].source = res?.source_documents;
+      // }
+      // console.log('QA_List', QA_List.value);
 
       // if (res?.history.length) {
       //   history.value = res?.history;
@@ -690,6 +627,9 @@ function getB64Type(suffix) {
 // };
 
 scrollBottom();
+const changeShowThinkHandler = item => {
+  item.showThink = !item.showThink;
+};
 </script>
 
 <style lang="scss" scoped>

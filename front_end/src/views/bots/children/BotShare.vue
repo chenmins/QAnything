@@ -52,7 +52,7 @@ init();
 const getBotInfo = async botId => {
   try {
     console.log('zj-botId', botId);
-    const res: any = await resultControl(await urlResquest.queryBotInfo({ bot_id: botId }));
+    const res: any = await resultControl(await urlResquest.queryBotInfo2({ bot_id: botId }));
     botInfo.value = res[0];
     document.title = `Qanything-${res[0].bot_name}`;
     isLoading.value = false;

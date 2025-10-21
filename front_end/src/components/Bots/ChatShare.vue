@@ -32,7 +32,11 @@
                         item.showTools ? '' : 'flashing',
                       ]"
                     >
-                      <HighLightMarkDown :content="item.answer.toString()" />
+                      <HighLightMarkDown
+                        :content="item.answer.toString()"
+                        :show-think="item.showThink"
+                        @changeShowThink="changeShowThinkHandler(item)"
+                      />
                       <ChatInfoPanel
                         v-if="Object.keys(item?.itemInfo?.tokenInfo || {}).length"
                         :chat-item-info="item.itemInfo"
@@ -848,6 +852,10 @@ const countdownHandler = () => {
  */
 const changeType = type => {
   sendType.value = type;
+};
+
+const changeShowThinkHandler = item => {
+  item.showThink = !item.showThink;
 };
 </script>
 

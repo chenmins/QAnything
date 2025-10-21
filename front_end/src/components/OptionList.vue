@@ -2,7 +2,7 @@
  * @Author: 祝占朋 wb.zhuzhanpeng01@mesg.corp.netease.com
  * @Date: 2023-12-26 14:49:41
  * @LastEditors: lizhiyong
- * @LastEditTime: 2025-09-30 16:28:57
+ * @LastEditTime: 2025-10-21 15:46:04
  * @FilePath: front_end/src/components/OptionList.vue
  * @Description: 
 -->
@@ -110,7 +110,7 @@
                   <span>{{ record.fileIdName }}</span>
                 </a-tooltip>
               </template>
-              <template v-else-if="column.key === 'fileTag'">
+              <!-- <template v-else-if="column.key === 'fileTag'">
                 <Tags
                   v-if="record.status === 'green'"
                   :tags="record.fileTag"
@@ -125,7 +125,7 @@
                     }
                   "
                 />
-              </template>
+              </template> -->
               <template v-else-if="column.key === 'status'">
                 <div class="status-box">
                   <span class="icon-file-status">
@@ -249,8 +249,8 @@ import UploadProgress from '@/components/UploadProgress.vue';
 import ChunkViewDialog from '@/components/ChunkViewDialog.vue';
 import FileUploadDialog from '@/components/FileUploadDialog.vue';
 // import { PlusOutlined } from '@ant-design/icons-vue';
-import Tags from '@/components/Tags.vue';
-import TagsInput from '@/components/TagsInput.vue';
+// import Tags from '@/components/Tags.vue';
+// import TagsInput from '@/components/TagsInput.vue';
 
 const { setDefault } = useKnowledgeBase();
 const { currentKbName, currentId } = storeToRefs(useKnowledgeBase());

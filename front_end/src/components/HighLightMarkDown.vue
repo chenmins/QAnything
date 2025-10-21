@@ -1,5 +1,17 @@
 <template>
-  <div class="high-light-comp" v-html="html"></div>
+  <div>
+    <div v-if="thinkHtml.length" class="think-container">
+      <div class="think-head" @click="changeArrow">
+        <p class="think-text">已深度思考</p>
+        <img v-show="showThinkC" src="@/assets/bots/arrow-bottom.png" alt="" />
+        <img v-show="!showThinkC" src="@/assets/bots/arrow-top.png" alt="" />
+      </div>
+      <p v-show="showThinkC" class="think-content">
+        {{ thinkHtml }}
+      </p>
+    </div>
+    <div class="high-light-comp" v-html="html"></div>
+  </div>
 </template>
 <script setup lang="ts">
 import { nextTick, watch } from 'vue';
@@ -16,6 +28,10 @@ const props = defineProps({
   showCode: {
     type: Boolean,
     default: false,
+  },
+  showThink: {
+    type: Boolean,
+    default: true,
   },
 });
 
@@ -40,12 +56,37 @@ const md = new MarkdownIt({
 });
 
 // const converter = new showdown.Converter();
+
+//格式化think标签
+const extractStrings = str => {
+  const regex = /<think>(.*?)<\/think>(.*)|<think>(.*)|^(?!<think>)([\s\S]*)$/s;
+  const matches = str.match(regex);
+  if (matches) {
+    return {
+      first: matches[1] || matches[3] || '',
+      second: matches[2] || matches[4] || '',
+    };
+  }
+  return {
+    first: '',
+    second: '',
+  };
+};
+
+const emit = defineEmits(['changeShowThink']);
+
+const changeArrow = () => {
+  emit('changeShowThink', !props.showThink);
+};
+
 const html = ref('');
+const thinkHtml = ref('');
 watch(
   () => props.content,
   newvalue => {
-    html.value = md.render(newvalue);
-    console.log('子组件', newvalue, html.value);
+    let formatObj = extractStrings(newvalue);
+    html.value = md.render(formatObj.second || '');
+    thinkHtml.value = formatObj.first || '';
   },
   { immediate: true }
 );
@@ -59,6 +100,14 @@ watch(
         });
       }
     });
+  },
+  { immediate: true }
+);
+const showThinkC = ref(true);
+watch(
+  () => props.showThink,
+  newvalue => {
+    showThinkC.value = newvalue;
   },
   { immediate: true }
 );
@@ -124,5 +173,24 @@ watch(
   line-break: anywhere;
   word-break: break-all;
   white-space: pre-line;
+}
+.think-container img {
+  width: 12px;
+  margin-left: 6px;
+}
+.think-text {
+  color: #90a0af;
+  font-size: 12px;
+}
+.think-head {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.think-content {
+  color: #90a0af;
+  line-height: 18px;
+  margin: 5px 0;
+  font-size: 12px;
 }
 </style>

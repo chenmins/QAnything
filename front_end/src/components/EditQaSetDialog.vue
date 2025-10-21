@@ -4,7 +4,7 @@
       v-model:open="editModalVisible"
       :title="home.inputQa"
       centered
-      :destroyOnClose="true"
+      :destroy-on-close="true"
       width="480px"
       wrap-class-name="edit-qa-set-modal"
       :footer="null"
@@ -12,9 +12,9 @@
       <div class="edit-qa-set-comp">
         <div class="tabs">
           <div
-            :class="['tab-item', tabIndex === item.value ? 'tab-item-active' : '']"
             v-for="item in tabList"
             :key="item.name"
+            :class="['tab-item', tabIndex === item.value ? 'tab-item-active' : '']"
             @click="tabClick(item.value)"
           >
             {{ item.name }}
@@ -151,9 +151,9 @@
           :open="previewVisible"
           :title="previewTitle"
           :footer="null"
-          @cancel="handleCancel"
           width="auto"
           centered
+          @cancel="handleCancel"
         >
           <img
             alt="example"
@@ -679,7 +679,7 @@ const handleCancel = () => {
       // width: 68px;
       height: 32px;
       padding: 0 20px;
-      background: #1566ef !important;;
+      background: #1566ef !important;
     }
   }
   :deep(.ant-upload-list) {

@@ -1,8 +1,8 @@
 /*
  * @Author: 祝占朋 wb.zhuzp01@rd.netease.com
  * @Date: 2023-11-01 14:57:33
- * @LastEditors: Ianarua 306781523@qq.com
- * @LastEditTime: 2024-08-06 10:25:59
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-10-21 15:47:27
  * @FilePath: front_end/src/store/useOptiionList.ts
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -163,6 +163,7 @@ export const useOptiionList = defineStore(
       } else {
         getProgressDetails();
       }
+      getFaqList();
     };
 
     // 进度条

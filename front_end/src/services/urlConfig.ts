@@ -2,7 +2,7 @@
  * @Author: 祝占朋 wb.zhuzhanpeng01@mesg.corp.netease.com
  * @Date: 2024-01-09 15:28:56
  * @LastEditors: lizhiyong
- * @LastEditTime: 2025-10-20 20:26:46
+ * @LastEditTime: 2025-10-21 11:03:40
  * @FilePath: front_end/src/services/urlConfig.ts
  * @Description:
  */
@@ -28,6 +28,7 @@ enum EUrlKey {
   createBot = 'createBot',
   updateBot = 'updateBot',
   queryBotInfo = 'queryBotInfo',
+  queryBotInfo2 = 'queryBotInfo2',
   deleteBot = 'deleteBot',
   uploadFaqs = 'uploadFaqs',
   getFile = 'getFile',
@@ -171,6 +172,15 @@ const urlConfig: IUrlConfig = {
   },
   // 获取Bot信息/列表
   queryBotInfo: {
+    type: EUrlType.POST,
+    url: '/local_doc_qa/get_bot_info',
+    param: {
+      user_id: userId,
+      user_info: userPhone,
+    },
+  },
+  // share 获取Bot信息/列表
+  queryBotInfo2: {
     type: EUrlType.POST,
     url: '/local_doc_qa/get_bot_info',
     param: {
