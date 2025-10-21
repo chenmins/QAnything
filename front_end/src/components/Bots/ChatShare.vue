@@ -539,6 +539,7 @@ const send = async () => {
           // chatInfoClass.addTime(res.time_record.time_usage);
           // chatInfoClass.addToken(res.time_record.token_usage);
           chatInfoClass.addDate(Date.now());
+          QA_List.value[QA_List.value.length - 1].showThink = false;
         }
 
         if (res?.source_documents?.length) {
