@@ -108,6 +108,13 @@
         </div>
 
         <div v-show="sendType == 'text'" class="question-box">
+          <div v-if="chatSettingFormActive?.other?.contentArr?.length" class="other-chat-con">
+            <template v-for="(itemC, indexC) in chatSettingFormActive?.other?.contentArr">
+              <p v-if="itemC?.text" :key="indexC" @click="otherSend(itemC?.text)">
+                {{ itemC?.text }}
+              </p>
+            </template>
+          </div>
           <div class="question">
             <ChatTextarea v-model:input-value="question" :options="mentionOptions" @send="send">
               <span class="yuyin" @click="changeType('audio')">
@@ -277,6 +284,7 @@ onMounted(() => {
       rerank: chatSetting.rerank,
     },
     active: true,
+    other: chatSetting.other,
   };
 });
 
@@ -857,6 +865,11 @@ const changeType = type => {
 
 const changeShowThinkHandler = item => {
   item.showThink = !item.showThink;
+};
+
+const otherSend = text => {
+  question.value = text;
+  send();
 };
 </script>
 
@@ -1536,6 +1549,22 @@ $avatar-width: 96px;
   }
   .ant-modal-body {
     flex: 1;
+  }
+}
+.other-chat-con {
+  max-width: 720px;
+  margin: 0 auto 8px;
+  display: flex;
+  align-items: center;
+  p {
+    margin-right: 10px;
+    padding: 3px 6px;
+    font-size: 14px;
+    line-height: 22px;
+    color: #222222;
+    border: 1px solid #d6d2d2;
+    border-radius: 20px;
+    cursor: pointer;
   }
 }
 </style>

@@ -281,6 +281,42 @@
           {{ common.saveModel }}
         </a-button>
       </a-form-item>
+      <a-form-item label="预设问题">
+        <div
+          v-for="(itemW, indexW) in chatSettingForm.other?.contentArr"
+          :key="indexW"
+          class="other-con"
+        >
+          <a-form-item :name="['other', 'contentArr', indexW, 'text']">
+            <a-input v-model:value="itemW.text" aria-autocomplete="none" />
+          </a-form-item>
+          <img src="@/assets/bots/add.png" alt="" @click="addOtherCon" />
+          <img
+            v-if="indexW > 0"
+            src="@/assets/bots/delete.png"
+            alt=""
+            @click="deleteOtherCon(indexW)"
+          />
+        </div>
+      </a-form-item>
+      <!-- <a-form-item label="预设问题" name="other">
+        <div
+          v-for="(itemW, indexW) in chatSettingForm.other?.contentArr"
+          :key="indexW"
+          class="other-con"
+        >
+          <a-input v-model:value="itemW.text" aria-autocomplete="none" />
+          <a-form-item-rest>
+            <img src="@/assets/bots/add.png" alt="" @click="addOtherCon" />
+            <img
+              v-if="indexW > 0"
+              src="@/assets/bots/delete.png"
+              alt=""
+              @click="deleteOtherCon(indexW)"
+            />
+          </a-form-item-rest>
+        </div>
+      </a-form-item> -->
     </a-form>
   </a-config-provider>
 </template>
@@ -487,6 +523,21 @@ const initForm = () => {
     }
   }
   chatSettingForm.value = { ...activeForm };
+  if (!chatSettingForm.value.other.contentArr) {
+    chatSettingForm.value.other = {
+      contentArr: [{ text: '', key: Math.random() }],
+    };
+  }
+};
+
+const addOtherCon = () => {
+  chatSettingForm.value.other.contentArr.push({
+    contentArr: [{ text: '', key: Math.random() }],
+  });
+};
+
+const deleteOtherCon = ind => {
+  chatSettingForm.value.other.contentArr.splice(0, ind);
 };
 
 // 监听多选框，转化到form表单项中
@@ -500,6 +551,7 @@ watch(
   () => chatSettingForm.value,
   () => {
     transformCheckbox(0);
+
     console.log('当前的表单为：', chatSettingForm.value);
   }
 );
@@ -519,7 +571,7 @@ onBeforeMount(() => {
 
 :deep(.ant-select-item-option-selected) {
   background: #eeecfc !important;
-  color: #1566ef !important;;
+  color: #1566ef !important;
 }
 
 :deep(.ant-btn-primary) {
@@ -544,7 +596,7 @@ onBeforeMount(() => {
 
 :deep(.ant-slider-handle) {
   &::after {
-    box-shadow: 0 0 0 2px  #1566ef;
+    box-shadow: 0 0 0 2px #1566ef;
     inset-block-start: 1px;
   }
 }
@@ -660,6 +712,22 @@ onBeforeMount(() => {
         .ant-form-item-control:first-child:not([class^="'ant-col-'"]):not([class*="' ant-col-'"])
     ) {
     padding-left: 16px;
+  }
+}
+.other-con {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  .ant-form-item {
+    margin-bottom: 0;
+  }
+  .ant-input {
+    width: 400px;
+  }
+  img {
+    width: 20px;
+    margin-left: 10px;
+    cursor: pointer;
   }
 }
 </style>

@@ -112,6 +112,7 @@ const saveBotInfo = async () => {
         hybrid_search: chatSettingFormActive.value.capabilities.mixedSearch,
         chunk_size: chatSettingFormActive.value.chunkSize,
         rerank: chatSettingFormActive.value.capabilities.rerank,
+        other: chatSettingFormActive.value.other,
       })
     );
     await getBotInfo(curBot.value.bot_id);
@@ -207,7 +208,7 @@ defineExpose({ handleOk });
       width: 68px;
       height: 32px;
       font-size: 14px;
-      background: #1566ef !important;;
+      background: #1566ef !important;
       margin-top: 5px;
     }
   }

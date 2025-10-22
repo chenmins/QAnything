@@ -1,8 +1,8 @@
 /*
  * @Author: 祝占朋 wb.zhuzhanpeng01@mesg.corp.netease.com
  * @Date: 2024-01-09 15:28:56
- * @LastEditors: Ianarua 306781523@qq.com
- * @LastEditTime: 2024-08-05 16:36:28
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-10-22 10:14:48
  * @FilePath: front_end/src/utils/types.ts
  * @Description:
  */
@@ -117,6 +117,12 @@ type ICapabilities = {
   rerank: boolean;
 };
 
+// 模型设置
+type OtherConfig = {
+  /* 是否联网搜索 */
+  contentArr: Array<object>;
+};
+
 export interface IChatSetting {
   /* 模型类型，string为自定义名称，不用传 */
   modelType: 'openAI' | 'ollama' | '自定义模型配置' | string;
@@ -148,6 +154,7 @@ export interface IChatSetting {
   capabilities: ICapabilities;
   /* 是否开启（只有一个） */
   active: boolean;
+  other: OtherConfig;
 }
 
 // 第一个对象类型，第二个参数联合类型，把联合类型里面的参数设定为可选
