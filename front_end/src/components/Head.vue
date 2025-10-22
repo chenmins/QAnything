@@ -2,7 +2,7 @@
  * @Author: 祝占朋 wb.zhuzp01@rd.netease.com
  * @Date: 2023-11-10 15:02:33
  * @LastEditors: lizhiyong
- * @LastEditTime: 2025-09-30 14:48:44
+ * @LastEditTime: 2025-10-22 15:14:35
  * @FilePath: front_end/src/components/Head.vue
  * @Description: 
 -->
@@ -30,7 +30,9 @@
         <img src="../assets/home/icon-home.png" alt="首页" /><span>首页</span>
       </li>
       <li><img src="../assets/home/icon-document.png" alt="开发文档" /><span>开发文档</span></li> -->
-      <li class="phone">
+      <li v-if="userId">{{ userId }}</li>
+
+      <!-- <li class="phone">
         <a-popover>
           <template #content>
             <p>仅做用户标识作用, 不会对用户信息做任何收集</p>
@@ -48,7 +50,7 @@
             </template>
           </a-input>
         </a-popover>
-      </li>
+      </li> -->
       <!-- <li class="toggle-button">
         <span :class="[language === 'zh' ? 'active' : '']" @click="changLanguage('zh')">中</span>
         <span class="line"></span>
@@ -97,7 +99,7 @@ const { setLanguage } = useLanguage();
 const { setNavIndex } = useHeader();
 const { changePage } = routeController();
 const { userInfo, setPhoneNumber } = useUser();
-
+const userId = localStorage.getItem('userId');
 const navList = [
   {
     name: getLanguage().header.quickStart,

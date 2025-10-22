@@ -1,8 +1,8 @@
 <!--
  * @Author: 祝占朋 wb.zhuzhanpeng01@mesg.corp.netease.com
  * @Date: 2024-01-09 15:28:56
- * @LastEditors: Ianarua 306781523@qq.com
- * @LastEditTime: 2024-08-02 15:15:50
+ * @LastEditors: lizhiyong
+ * @LastEditTime: 2025-10-22 15:09:20
  * @FilePath: front_end/src/views/Home.vue
  * @Description: 
 -->
@@ -50,7 +50,7 @@ onMounted(() => {
   //padding-top: 0;
   width: 100%;
   height: 100%;
-  background-color: #1566EF;
+  background-color: #1566ef;
 
   .initing {
     width: 100%;
