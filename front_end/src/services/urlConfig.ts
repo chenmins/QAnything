@@ -2,7 +2,7 @@
  * @Author: 祝占朋 wb.zhuzhanpeng01@mesg.corp.netease.com
  * @Date: 2024-01-09 15:28:56
  * @LastEditors: lizhiyong
- * @LastEditTime: 2025-10-22 15:17:01
+ * @LastEditTime: 2025-10-22 15:45:02
  * @FilePath: front_end/src/services/urlConfig.ts
  * @Description:
  */
@@ -60,7 +60,7 @@ type IUrlConfig = Record<EUrlKey, IUrlValueConfig>;
 import services from '.';
 
 export const userId = localStorage.getItem('userId') || 'user';
-export const userPhone = localUserInfo.phoneNumber;
+export const userPhone = localStorage.getItem('userInfo') || localUserInfo.phoneNumber;
 
 //ajax请求接口
 const urlConfig: IUrlConfig = {
