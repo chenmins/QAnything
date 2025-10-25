@@ -532,7 +532,7 @@ const initForm = () => {
 
 const addOtherCon = () => {
   chatSettingForm.value.other.contentArr.push({
-    contentArr: [{ text: '', key: Math.random() }],
+    text: '', key: Math.random()
   });
 };
 
