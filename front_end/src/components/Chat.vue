@@ -108,18 +108,18 @@
                     </div>
                   </template>
                   <div v-if="item.showTools" class="feed-back">
-                    <div class="reload-box" @click="reAnswer(item)">
-                      <SvgIcon name="reload"></SvgIcon>
-                      <span class="reload-text">{{ common.regenerate }}</span>
-                    </div>
-                    <div class="tools">
+                    <div class="reload-box">
                       <SvgIcon
                         :style="{
-                          color: item.copied ? '#4D71FF' : '',
+                          color: item.copied ? '' : '',
                         }"
                         name="copy"
                         @click="myCopy(item)"
                       ></SvgIcon>
+                      <SvgIcon name="reload" @click="reAnswer(item)"></SvgIcon>
+                      <span class="reload-text" @click="reAnswer(item)">{{ common.regenerate }}</span>
+                    </div>
+                    <!-- <div class="tools">
                       <SvgIcon
                         :style="{
                           color: item.like ? '#4D71FF' : '',
@@ -134,7 +134,7 @@
                         name="unlike"
                         @click="unlike(item)"
                       ></SvgIcon>
-                    </div>
+                    </div> -->
                   </div>
                 </div>
               </div>

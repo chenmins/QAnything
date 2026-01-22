@@ -44,18 +44,24 @@
                     </p>
 
                     <div v-if="item.showTools" class="feed-back">
-                      <div class="reload-box" @click="reAnswer(item)">
-                        <SvgIcon name="reload"></SvgIcon>
-                        <span class="reload-text">{{ common.regenerate }}</span>
-                      </div>
-                      <div class="tools">
+                      <div class="reload-box">
                         <SvgIcon
                           :style="{
-                            color: item.copied ? '#4D71FF' : '',
+                            color: item.copied ? '' : '',
                           }"
                           name="copy"
                           @click="myCopy(item)"
                         ></SvgIcon>
+                        <SvgIcon
+                          name="reload"
+                          style="margin-left: 10px"
+                          @click="reAnswer(item)"
+                        ></SvgIcon>
+                        <span class="reload-text" @click="reAnswer(item)">{{
+                          common.regenerate
+                        }}</span>
+                      </div>
+                      <!-- <div class="tools">
                         <SvgIcon
                           :style="{
                             color: item.like ? '#4D71FF' : '',
@@ -70,7 +76,7 @@
                           name="unlike"
                           @click="unlike(item)"
                         ></SvgIcon>
-                      </div>
+                      </div> -->
                     </div>
                   </div>
                 </div>
@@ -129,7 +135,7 @@
                   <SvgIcon name="chat-download" />
                 </span>
               </a-popover>
-              <a-popover trigger="click">
+              <!-- <a-popover trigger="click">
                 <template #title>{{ common.contextLabel }}</template>
                 <template #content>
                   <a-slider
@@ -143,7 +149,7 @@
                 <span class="setting">
                   <SvgIcon name="chat-setting" />
                 </span>
-              </a-popover>
+              </a-popover> -->
               <a-button type="primary" :disabled="showLoading" shape="circle" @click="send">
                 <SvgIcon name="sendplane" />
               </a-button>
@@ -1106,7 +1112,7 @@ $avatar-width: 96px;
         cursor: pointer;
         align-items: center;
         margin-right: auto;
-        color: #1566ef;
+        color: #717070;
 
         .reload-text {
           height: 22px;
@@ -1447,7 +1453,7 @@ $avatar-width: 96px;
 .yuyin {
   cursor: pointer;
   padding: 8px;
-  margin-right: 16px;
+  margin-right: 8px;
   display: flex;
 
   img {

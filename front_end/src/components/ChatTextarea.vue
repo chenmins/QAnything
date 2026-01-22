@@ -264,7 +264,7 @@ const send = () => {
 watch(
   () => props.inputValue,
   () => {
-    console.log('props', inputValue.value);
+    // console.log('props', inputValue.value);
     if (props.inputValue.length === 0) {
       textareaRef.value.textContent = props.inputValue;
     }
