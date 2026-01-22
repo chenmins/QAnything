@@ -526,7 +526,7 @@ const initForm = () => {
   if (!chatSettingForm.value.other.contentArr) {
     chatSettingForm.value.other.contentArr = [{ text: '', key: Math.random() }];
   }
-  if (!chatSettingForm.value.other.context) {
+  if (!chatSettingForm.value?.other?.context) {
     chatSettingForm.value.other.context = 0;
   }
 };

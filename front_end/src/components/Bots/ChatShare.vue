@@ -301,7 +301,7 @@ const sliderFormatter = (value: number) => {
 
 //问答的上下文
 const history = computed(() => {
-  const context = chatSettingFormActive.value.other.context;
+  const context = chatSettingFormActive.value?.other?.context || 0;
   if (context === 0) return [];
   const usefulChat = QA_List.value.filter(item => item.type === 'ai');
   const historyChat = context === 11 ? usefulChat : usefulChat.slice(-context);
