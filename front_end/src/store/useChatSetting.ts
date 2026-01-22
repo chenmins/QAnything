@@ -28,6 +28,7 @@ export const useChatSetting = defineStore(
       active: false,
       other: {
         contentArr: [{ text: '', key: Math.random() }],
+        context: 0,
       },
     };
 

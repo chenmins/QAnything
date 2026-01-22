@@ -280,7 +280,6 @@ onMounted(() => {
     maxToken: chatSetting.max_token,
     chunkSize: chatSetting.chunk_size,
     temperature: chatSetting.temperature,
-    context: 0,
     top_K: chatSetting.top_k,
     top_P: chatSetting.top_p,
     capabilities: {
@@ -302,7 +301,7 @@ const sliderFormatter = (value: number) => {
 
 //问答的上下文
 const history = computed(() => {
-  const context = chatSettingFormActive.value.context;
+  const context = chatSettingFormActive.value.other.context;
   if (context === 0) return [];
   const usefulChat = QA_List.value.filter(item => item.type === 'ai');
   const historyChat = context === 11 ? usefulChat : usefulChat.slice(-context);
@@ -1538,6 +1537,7 @@ $avatar-width: 96px;
     }
   }
 }
+
 .full-modal {
   .ant-modal {
     max-width: 100%;
@@ -1545,6 +1545,7 @@ $avatar-width: 96px;
     padding-bottom: 0;
     margin: 0;
   }
+
   .ant-modal-content {
     display: flex;
     flex-direction: column;

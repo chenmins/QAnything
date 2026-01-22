@@ -121,6 +121,8 @@ type ICapabilities = {
 type OtherConfig = {
   /* 是否联网搜索 */
   contentArr: Array<object>;
+  // 上下文消息数量
+  context: number;
 };
 
 export interface IChatSetting {

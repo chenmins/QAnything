@@ -242,7 +242,7 @@
           />
         </a-form-item>
       </div>
-      <a-form-item ref="context" name="context">
+      <a-form-item ref="context">
         <template #label>
           <a-popover placement="topLeft">
             <template #content>
@@ -252,7 +252,7 @@
           </a-popover>
         </template>
         <a-slider
-          v-model:value="chatSettingForm.context"
+          v-model:value="chatSettingForm.other.context"
           :min="0"
           :max="11"
           :step="1"
@@ -524,15 +524,17 @@ const initForm = () => {
   }
   chatSettingForm.value = { ...activeForm };
   if (!chatSettingForm.value.other.contentArr) {
-    chatSettingForm.value.other = {
-      contentArr: [{ text: '', key: Math.random() }],
-    };
+    chatSettingForm.value.other.contentArr = [{ text: '', key: Math.random() }];
+  }
+  if (!chatSettingForm.value.other.context) {
+    chatSettingForm.value.other.context = 0;
   }
 };
 
 const addOtherCon = () => {
   chatSettingForm.value.other.contentArr.push({
-    text: '', key: Math.random()
+    text: '',
+    key: Math.random(),
   });
 };
 
