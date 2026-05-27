@@ -43,7 +43,7 @@ Extend(app)
 app.config.REQUEST_MAX_SIZE = 128 * 1024 * 1024
 
 # 将 /qanything 路径映射到 ./dist/qanything 文件夹，并指定路由名称
-app.static('/qanything/', 'qanything_kernel/qanything_server/dist/qanything/', name='qanything', index="index.html")
+app.static('/qanything/web/', 'qanything_kernel/qanything_server/dist/qanything/', name='qanything', index="index.html")
 
 
 @app.before_server_start
@@ -68,36 +68,36 @@ async def start_server_and_open_browser(app, loop):
         # 记录或处理任何异常
         print(f"Failed to open browser: {e}")
 
-# app.add_route(lambda req: response.redirect('/api/docs'), '/')
+# app.add_route(lambda req: response.redirect('/qanything/api/docs'), '/')
 # tags=["新建知识库"]
-app.add_route(document, "/api/docs", methods=['GET'])
-app.add_route(health_check, "/api/health_check", methods=['GET'])  # tags=["健康检查"]
-app.add_route(new_knowledge_base, "/api/local_doc_qa/new_knowledge_base", methods=['POST'])  # tags=["新建知识库"]
-app.add_route(upload_weblink, "/api/local_doc_qa/upload_weblink", methods=['POST'])  # tags=["上传网页链接"]
-app.add_route(upload_files, "/api/local_doc_qa/upload_files", methods=['POST'])  # tags=["上传文件"]
-app.add_route(upload_faqs, "/api/local_doc_qa/upload_faqs", methods=['POST'])  # tags=["上传FAQ"]
-app.add_route(local_doc_chat, "/api/local_doc_qa/local_doc_chat", methods=['POST'])  # tags=["问答接口"] 
-app.add_route(list_kbs, "/api/local_doc_qa/list_knowledge_base", methods=['POST'])  # tags=["知识库列表"] 
-app.add_route(list_docs, "/api/local_doc_qa/list_files", methods=['POST'])  # tags=["文件列表"]
-app.add_route(get_total_status, "/api/local_doc_qa/get_total_status", methods=['POST'])  # tags=["获取所有知识库状态数据库"]
-app.add_route(clean_files_by_status, "/api/local_doc_qa/clean_files_by_status", methods=['POST'])  # tags=["清理数据库"]
-app.add_route(delete_docs, "/api/local_doc_qa/delete_files", methods=['POST'])  # tags=["删除文件"] 
-app.add_route(delete_knowledge_base, "/api/local_doc_qa/delete_knowledge_base", methods=['POST'])  # tags=["删除知识库"] 
-app.add_route(rename_knowledge_base, "/api/local_doc_qa/rename_knowledge_base", methods=['POST'])  # tags=["重命名知识库"]
-app.add_route(get_doc_completed, "/api/local_doc_qa/get_doc_completed", methods=['POST'])  # tags=["获取文档完整解析内容"]
-app.add_route(get_qa_info, "/api/local_doc_qa/get_qa_info", methods=['POST'])  # tags=["获取QA信息"]
-app.add_route(get_user_id, "/api/local_doc_qa/get_user_id", methods=['POST'])  # tags=["获取用户ID"]
-app.add_route(get_doc, "/api/local_doc_qa/get_doc", methods=['POST'])  # tags=["获取doc详细内容"]
-app.add_route(get_rerank_results, "/api/local_doc_qa/get_rerank_results", methods=['POST'])  # tags=["获取rerank结果"]
-app.add_route(get_user_status, "/api/local_doc_qa/get_user_status", methods=['POST'])  # tags=["获取用户状态"]
-app.add_route(get_random_qa, "/api/local_doc_qa/get_random_qa", methods=['POST'])  # tags=["获取随机QA"]
-app.add_route(get_related_qa, "/api/local_doc_qa/get_related_qa", methods=['POST'])  # tags=["获取相关QA"]
-app.add_route(new_bot, "/api/local_doc_qa/new_bot", methods=['POST'])  # tags=["新建Bot"]
-app.add_route(delete_bot, "/api/local_doc_qa/delete_bot", methods=['POST'])  # tags=["删除Bot"]
-app.add_route(update_bot, "/api/local_doc_qa/update_bot", methods=['POST'])  # tags=["更新Bot"]
-app.add_route(get_bot_info, "/api/local_doc_qa/get_bot_info", methods=['POST'])  # tags=["获取Bot信息"]
-app.add_route(update_chunks, "/api/local_doc_qa/update_chunks", methods=['POST'])  # tags=["更新chunk"]
-app.add_route(get_file_base64, "/api/local_doc_qa/get_file_base64", methods=['POST'])  # tags=["更新chunk"]
+app.add_route(document, "/qanything/api/docs", methods=['GET'])
+app.add_route(health_check, "/qanything/api/health_check", methods=['GET'])  # tags=["健康检查"]
+app.add_route(new_knowledge_base, "/qanything/api/local_doc_qa/new_knowledge_base", methods=['POST'])  # tags=["新建知识库"]
+app.add_route(upload_weblink, "/qanything/api/local_doc_qa/upload_weblink", methods=['POST'])  # tags=["上传网页链接"]
+app.add_route(upload_files, "/qanything/api/local_doc_qa/upload_files", methods=['POST'])  # tags=["上传文件"]
+app.add_route(upload_faqs, "/qanything/api/local_doc_qa/upload_faqs", methods=['POST'])  # tags=["上传FAQ"]
+app.add_route(local_doc_chat, "/qanything/api/local_doc_qa/local_doc_chat", methods=['POST'])  # tags=["问答接口"] 
+app.add_route(list_kbs, "/qanything/api/local_doc_qa/list_knowledge_base", methods=['POST'])  # tags=["知识库列表"] 
+app.add_route(list_docs, "/qanything/api/local_doc_qa/list_files", methods=['POST'])  # tags=["文件列表"]
+app.add_route(get_total_status, "/qanything/api/local_doc_qa/get_total_status", methods=['POST'])  # tags=["获取所有知识库状态数据库"]
+app.add_route(clean_files_by_status, "/qanything/api/local_doc_qa/clean_files_by_status", methods=['POST'])  # tags=["清理数据库"]
+app.add_route(delete_docs, "/qanything/api/local_doc_qa/delete_files", methods=['POST'])  # tags=["删除文件"] 
+app.add_route(delete_knowledge_base, "/qanything/api/local_doc_qa/delete_knowledge_base", methods=['POST'])  # tags=["删除知识库"] 
+app.add_route(rename_knowledge_base, "/qanything/api/local_doc_qa/rename_knowledge_base", methods=['POST'])  # tags=["重命名知识库"]
+app.add_route(get_doc_completed, "/qanything/api/local_doc_qa/get_doc_completed", methods=['POST'])  # tags=["获取文档完整解析内容"]
+app.add_route(get_qa_info, "/qanything/api/local_doc_qa/get_qa_info", methods=['POST'])  # tags=["获取QA信息"]
+app.add_route(get_user_id, "/qanything/api/local_doc_qa/get_user_id", methods=['POST'])  # tags=["获取用户ID"]
+app.add_route(get_doc, "/qanything/api/local_doc_qa/get_doc", methods=['POST'])  # tags=["获取doc详细内容"]
+app.add_route(get_rerank_results, "/qanything/api/local_doc_qa/get_rerank_results", methods=['POST'])  # tags=["获取rerank结果"]
+app.add_route(get_user_status, "/qanything/api/local_doc_qa/get_user_status", methods=['POST'])  # tags=["获取用户状态"]
+app.add_route(get_random_qa, "/qanything/api/local_doc_qa/get_random_qa", methods=['POST'])  # tags=["获取随机QA"]
+app.add_route(get_related_qa, "/qanything/api/local_doc_qa/get_related_qa", methods=['POST'])  # tags=["获取相关QA"]
+app.add_route(new_bot, "/qanything/api/local_doc_qa/new_bot", methods=['POST'])  # tags=["新建Bot"]
+app.add_route(delete_bot, "/qanything/api/local_doc_qa/delete_bot", methods=['POST'])  # tags=["删除Bot"]
+app.add_route(update_bot, "/qanything/api/local_doc_qa/update_bot", methods=['POST'])  # tags=["更新Bot"]
+app.add_route(get_bot_info, "/qanything/api/local_doc_qa/get_bot_info", methods=['POST'])  # tags=["获取Bot信息"]
+app.add_route(update_chunks, "/qanything/api/local_doc_qa/update_chunks", methods=['POST'])  # tags=["更新chunk"]
+app.add_route(get_file_base64, "/qanything/api/local_doc_qa/get_file_base64", methods=['POST'])  # tags=["更新chunk"]
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=args.port, workers=args.workers, access_log=False)
