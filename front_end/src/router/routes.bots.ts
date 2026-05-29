@@ -1,84 +1,23 @@
 /*
- * @Description: Bots-only routes configuration
- * This file contains only the routes needed for the bots-only build
+ * @Description: Bots-only routes configuration for share pages
+ * This build only includes bot share pages, no management interface
+ * 此配置仅包含机器人分享页面，不包含管理界面，防止通过前台网址访问管理功能
  */
 import { RouteRecordRaw } from 'vue-router';
 
 export const routes: RouteRecordRaw[] = [
-  {
-    path: '/',
-    name: 'root',
-    component: () => import('@/layout/index.vue'),
-    redirect: '/bots',
-    children: [
-      {
-        path: '/bots',
-        name: 'bots',
-        component: () => import('@/views/bots/Bots.vue'),
-        children: [
-          {
-            path: '/bots',
-            name: 'bots-manage',
-            component: () => import('@/views/bots/children/BotsManage.vue'),
-            meta: {
-              requiresAuth: true,
-            },
-          },
-          {
-            path: '/bots/:botId/edit',
-            name: 'edit',
-            component: () => import('@/views/bots/children/BotEdit.vue'),
-            meta: {
-              requiresAuth: true,
-            },
-            children: [
-              {
-                path: '/bots/:botId/edit',
-                name: 'edit-detail',
-                component: () => import('@/views/bots/children/EditDetail.vue'),
-                meta: {
-                  requiresAuth: true,
-                },
-              },
-              {
-                path: '/bots/:botId/publish',
-                name: 'publish',
-                component: () => import('@/views/bots/children/BotPublish.vue'),
-                meta: {
-                  requiresAuth: true,
-                },
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    path: '/statistics',
-    name: 'statistics',
-    component: () => import('@/views/Statistics/index.vue'),
-    redirect: '/statistics/overview',
-    children: [
-      {
-        path: 'overview',
-        name: 'overview',
-        component: () => import('@/views/Statistics/components/Overview.vue'),
-      },
-      {
-        path: 'details',
-        name: 'details',
-        component: () => import('@/views/Statistics/components/Details.vue'),
-      },
-    ],
-  },
   {
     path: '/bots/:botId/share',
     name: 'share',
     component: () => import('@/views/bots/children/BotShare.vue'),
   },
   {
+    // Redirect all other routes to a default share page or show 404
+    // 所有其他路由都重定向，防止访问管理界面
     path: '/:catchAll(.*)',
-    redirect: '/bots',
+    redirect: () => {
+      // Return to a 404 or prevent access
+      return '/bots/error/share';
+    },
   },
 ];
