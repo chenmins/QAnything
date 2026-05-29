@@ -7,6 +7,7 @@
     "test": "vite build --mode test",
     "analyzer": "vite build --mode test",
     "build": "vite build",
+    "build:bots": "vite build --mode production-bots",
     "serve": "vite preview --port 5052",
     "lint-staged": "lint-staged",
     "cdn-test": "bash ./cicdn.sh test",

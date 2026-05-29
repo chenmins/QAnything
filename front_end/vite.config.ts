@@ -77,6 +77,10 @@ function resovePath(paths) {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
 
+  // Determine output directory based on build mode
+  const isBotsBuild = mode === 'production-bots';
+  const outDir = isBotsBuild ? 'dist/bots-only' : 'dist/qanything';
+
   return {
     plugins: [
       Components({
@@ -137,7 +141,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
-      outDir: `dist/qanything`,
+      outDir: outDir,
       minify: 'terser',
       terserOptions: {
         compress: {
