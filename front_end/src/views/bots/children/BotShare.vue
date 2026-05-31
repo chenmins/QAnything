@@ -52,9 +52,11 @@ init();
 const getBotInfo = async botId => {
   try {
     console.log('zj-botId', botId);
-    const res: any = await resultControl(await urlResquest.queryBotInfo({ bot_id: botId }));
-    botInfo.value = res[0];
-    document.title = `Qanything-${res[0].bot_name}`;
+    // 使用新的公开分享接口，不需要 user_id 认证
+    const res: any = await resultControl(await urlResquest.queryBotShareInfo({ bot_id: botId }));
+    // 新接口返回的是单个对象，不是数组
+    botInfo.value = res;
+    document.title = `Qanything-${res.bot_name}`;
     isLoading.value = false;
   } catch (e) {
     message.error(e.msg || '获取Bot信息失败');
