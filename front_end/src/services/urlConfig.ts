@@ -182,7 +182,7 @@ const urlConfig: IUrlConfig = {
   // 获取Bot公开分享信息（不需要认证）
   queryBotShareInfo: {
     type: EUrlType.POST,
-    url: '/local_doc_qa/get_bot_share_info',
+    url: '/share/get_bot_share_info',
     param: {
       // 不需要 user_id 和 user_info，只需要 bot_id
     },
