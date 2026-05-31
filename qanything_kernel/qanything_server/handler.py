@@ -1286,6 +1286,12 @@ async def get_bot_share_info(req: request):
     Public API for bot sharing - only returns public information
     No user authentication required, only bot_id needed
     Does not expose sensitive information like user_id, kb_ids, prompt_setting, llm_setting
+    
+    Security Note:
+    - Currently, any bot_id can be accessed through this endpoint if it exists and is not deleted
+    - Future enhancement: Consider adding an 'is_public' or 'is_shareable' flag to the QanythingBot table
+      to explicitly control which bots can be accessed through public sharing
+    - For now, the security relies on bot_id being unpredictable (UUID-based)
     """
     local_doc_qa: LocalDocQA = req.app.ctx.local_doc_qa
     bot_id = safe_get(req, 'bot_id')
@@ -1301,7 +1307,8 @@ async def get_bot_share_info(req: request):
     debug_logger.info("get_bot_share_info bot_id: %s", bot_id)
     
     # Get bot info without user_id filter (public access)
-    # We need to get the bot info directly by bot_id
+    # Note: This queries the bot directly by bot_id, bypassing user ownership check
+    # The database get_bot() method supports this by accepting None as user_id
     bot_infos = local_doc_qa.milvus_summary.get_bot(None, bot_id)
     
     if not bot_infos:
