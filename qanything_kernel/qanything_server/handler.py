@@ -1317,6 +1317,11 @@ async def get_bot_share_info(req: request):
     # Only return the first bot info (should only be one with specific bot_id)
     bot_info = bot_infos[0]
     
+    # bot_info tuple structure:
+    # [0] bot_id, [1] bot_name, [2] description, [3] head_image, 
+    # [4] prompt_setting, [5] welcome_message, [6] kb_ids (comma-separated),
+    # [7] update_time, [8] user_id, [9] llm_setting
+    
     # Get user_id from bot_info[8]
     user_id = bot_info[8] if len(bot_info) > 8 else None
     
