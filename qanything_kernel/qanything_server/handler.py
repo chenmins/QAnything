@@ -1283,9 +1283,9 @@ async def get_bot_info(req: request):
 @get_time_async
 async def get_bot_share_info(req: request):
     """
-    Public API for bot sharing - only returns public information
+    Public API for bot sharing - returns bot information including configuration
     No user authentication required, only bot_id needed
-    Does not expose sensitive information like user_id, kb_ids, prompt_setting, llm_setting
+    Now includes: user_id, kb_ids, kb_names, prompt_setting, llm_setting, update_time
     
     Security Note:
     - Currently, any bot_id can be accessed through this endpoint if it exists and is not deleted
@@ -1317,14 +1317,36 @@ async def get_bot_share_info(req: request):
     # Only return the first bot info (should only be one with specific bot_id)
     bot_info = bot_infos[0]
     
-    # Only return public fields, exclude sensitive information
+    # Get user_id from bot_info[8]
+    user_id = bot_info[8] if len(bot_info) > 8 else None
+    
+    # Process kb_ids and kb_names
+    if bot_info[6] != "":
+        kb_ids = bot_info[6].split(',')
+        kb_infos = local_doc_qa.milvus_summary.get_knowledge_base_name(kb_ids)
+        kb_names = []
+        for kb_id in kb_ids:
+            for kb_info in kb_infos:
+                if kb_id == kb_info[1]:
+                    kb_names.append(kb_info[2])
+                    break
+    else:
+        kb_ids = []
+        kb_names = []
+    
+    # Return all fields including previously excluded ones
     data = {
         "bot_id": bot_info[0],
         "bot_name": bot_info[1],
         "description": bot_info[2],
         "head_image": bot_info[3],
-        "welcome_message": bot_info[5]
-        # Excluded fields: user_id, kb_ids, kb_names, prompt_setting, llm_setting, update_time
+        "prompt_setting": bot_info[4],
+        "welcome_message": bot_info[5],
+        "kb_ids": kb_ids,
+        "kb_names": kb_names,
+        "update_time": bot_info[7].strftime("%Y-%m-%d %H:%M:%S"),
+        "llm_setting": bot_info[9],
+        "user_id": user_id
     }
     
     return sanic_json({"code": 200, "msg": "success", "data": data})

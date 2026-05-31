@@ -100,5 +100,9 @@ app.add_route(get_bot_share_info, "/api/local_doc_qa/get_bot_share_info", method
 app.add_route(update_chunks, "/api/local_doc_qa/update_chunks", methods=['POST'])  # tags=["更新chunk"]
 app.add_route(get_file_base64, "/api/local_doc_qa/get_file_base64", methods=['POST'])  # tags=["更新chunk"]
 
+# Share API routes (public bot sharing)
+app.add_route(local_doc_chat, "/api/share/local_doc_chat", methods=['POST'])  # tags=["公开分享问答接口"]
+app.add_route(get_bot_share_info, "/api/share/get_bot_share_info", methods=['POST'])  # tags=["获取Bot公开分享信息"]
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=args.port, workers=args.workers, access_log=False)
