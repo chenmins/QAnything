@@ -527,7 +527,7 @@ const send = async () => {
       scrollBottom();
     });
   } else {
-    fetchEventSource(apiBase + '/local_doc_qa/local_doc_chat', {
+    fetchEventSource(apiBase + '/share/local_doc_chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

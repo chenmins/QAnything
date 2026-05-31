@@ -28,6 +28,7 @@ enum EUrlKey {
   createBot = 'createBot',
   updateBot = 'updateBot',
   queryBotInfo = 'queryBotInfo',
+  queryBotShareInfo = 'queryBotShareInfo',
   deleteBot = 'deleteBot',
   uploadFaqs = 'uploadFaqs',
   getFile = 'getFile',
@@ -176,6 +177,14 @@ const urlConfig: IUrlConfig = {
     param: {
       user_id: userId,
       user_info: userPhone,
+    },
+  },
+  // 获取Bot公开分享信息（不需要认证）
+  queryBotShareInfo: {
+    type: EUrlType.POST,
+    url: '/share/get_bot_share_info',
+    param: {
+      // 不需要 user_id 和 user_info，只需要 bot_id
     },
   },
   //删除Bot

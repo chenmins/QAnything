@@ -7,13 +7,17 @@
  * @Description:
  */
 import { createRouter, createWebHashHistory } from 'vue-router';
-import { routes } from './routes';
+import { routes as fullRoutes } from './routes';
+import { routes as botsRoutes } from './routes.bots';
 // import { useUser } from '@/store/useUser';
 // 导入进度条
 import { start, close } from '@/utils/nporgress';
 import { checkVersion } from '@/utils/version';
 
 //是否隐藏NavBar
+
+// Load routes based on build mode
+const routes = import.meta.env.VITE_APP_MODE === 'bots-only' ? botsRoutes : fullRoutes;
 
 const router = createRouter({
   history: createWebHashHistory(),
