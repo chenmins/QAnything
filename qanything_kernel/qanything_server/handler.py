@@ -30,7 +30,7 @@ __all__ = ["new_knowledge_base", "upload_files", "list_kbs", "list_docs", "delet
            "rename_knowledge_base", "get_total_status", "clean_files_by_status", "upload_weblink", "local_doc_chat",
            "document", "upload_faqs", "get_doc_completed", "get_qa_info", "get_user_id", "get_doc",
            "get_rerank_results", "get_user_status", "health_check", "update_chunks", "get_file_base64",
-           "get_random_qa", "get_related_qa", "new_bot", "delete_bot", "update_bot", "get_bot_info"]
+           "get_random_qa", "get_related_qa", "new_bot", "delete_bot", "update_bot", "get_bot_info", "get_bot_share_info"]
 
 INVALID_USER_ID = f"fail, Invalid user_id: . user_id 必须只含有字母，数字和下划线且字母开头"
 
@@ -1277,6 +1277,49 @@ async def get_bot_info(req: request):
                 "kb_ids": kb_ids, "kb_names": kb_names,
                 "update_time": bot_info[7].strftime("%Y-%m-%d %H:%M:%S"), "llm_setting": bot_info[9]}
         data.append(info)
+    return sanic_json({"code": 200, "msg": "success", "data": data})
+
+
+@get_time_async
+async def get_bot_share_info(req: request):
+    """
+    Public API for bot sharing - only returns public information
+    No user authentication required, only bot_id needed
+    Does not expose sensitive information like user_id, kb_ids, prompt_setting, llm_setting
+    """
+    local_doc_qa: LocalDocQA = req.app.ctx.local_doc_qa
+    bot_id = safe_get(req, 'bot_id')
+    
+    # Validate bot_id
+    if not bot_id:
+        return sanic_json({"code": 2001, "msg": "fail, bot_id is required"})
+    
+    # Check if bot exists
+    if not local_doc_qa.milvus_summary.check_bot_is_exist(bot_id):
+        return sanic_json({"code": 2003, "msg": "fail, Bot {} not found".format(bot_id)})
+    
+    debug_logger.info("get_bot_share_info bot_id: %s", bot_id)
+    
+    # Get bot info without user_id filter (public access)
+    # We need to get the bot info directly by bot_id
+    bot_infos = local_doc_qa.milvus_summary.get_bot(None, bot_id)
+    
+    if not bot_infos:
+        return sanic_json({"code": 2003, "msg": "fail, Bot {} not found".format(bot_id)})
+    
+    # Only return the first bot info (should only be one with specific bot_id)
+    bot_info = bot_infos[0]
+    
+    # Only return public fields, exclude sensitive information
+    data = {
+        "bot_id": bot_info[0],
+        "bot_name": bot_info[1],
+        "description": bot_info[2],
+        "head_image": bot_info[3],
+        "welcome_message": bot_info[5]
+        # Excluded fields: user_id, kb_ids, kb_names, prompt_setting, llm_setting, update_time
+    }
+    
     return sanic_json({"code": 200, "msg": "success", "data": data})
 
 

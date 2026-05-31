@@ -96,6 +96,7 @@ app.add_route(new_bot, "/api/local_doc_qa/new_bot", methods=['POST'])  # tags=["
 app.add_route(delete_bot, "/api/local_doc_qa/delete_bot", methods=['POST'])  # tags=["删除Bot"]
 app.add_route(update_bot, "/api/local_doc_qa/update_bot", methods=['POST'])  # tags=["更新Bot"]
 app.add_route(get_bot_info, "/api/local_doc_qa/get_bot_info", methods=['POST'])  # tags=["获取Bot信息"]
+app.add_route(get_bot_share_info, "/api/local_doc_qa/get_bot_share_info", methods=['POST'])  # tags=["获取Bot公开分享信息"]
 app.add_route(update_chunks, "/api/local_doc_qa/update_chunks", methods=['POST'])  # tags=["更新chunk"]
 app.add_route(get_file_base64, "/api/local_doc_qa/get_file_base64", methods=['POST'])  # tags=["更新chunk"]
 
