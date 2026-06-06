@@ -205,7 +205,6 @@
   <DefaultModal :content="content" :confirm-loading="confirmLoading" @ok="confirm" />
 </template>
 <script lang="ts" setup>
-import { apiBase } from '@/services';
 import { IChatItem, IChatSetting, MakePartial } from '@/utils/types';
 import { useThrottleFn, useClipboard } from '@vueuse/core';
 import { message } from 'ant-design-vue';
@@ -218,13 +217,13 @@ import DefaultModal from '../DefaultModal.vue';
 import html2canvas from 'html2canvas';
 import { getLanguage } from '@/language/index';
 import { useLanguage } from '@/store/useLanguage';
-import urlResquest from '@/services/urlConfig';
 import { ChatInfoClass, resultControl } from '@/utils/utils';
 import ChatInfoPanel from '@/components/ChatInfoPanel.vue';
 import HighLightMarkDown from '@/components/HighLightMarkDown.vue';
 import ChatTextarea from '@/components/ChatTextarea.vue';
 import { useUser } from '@/store/useUser';
 import { XunFeiRecord } from '@/assets/js/RecordEntry.js';
+import { getShareApiUrl, LOCAL_DOC_CHAT_PATH, localDocChat } from '@/services/shareBotApi';
 
 const props = defineProps({
   chatType: {
@@ -492,7 +491,7 @@ const send = async () => {
     addAnswer(q);
     try {
       const res: any = await resultControl(
-        await urlResquest.sendQuestion(sendData, { signal: ctrl.signal })
+        await localDocChat(sendData, { signal: ctrl.signal })
       );
       if (res.code === 200) {
         QA_List.value[QA_List.value.length - 1].answer = res?.source_documents.length
@@ -512,7 +511,7 @@ const send = async () => {
       scrollBottom();
     });
   } else {
-    fetchEventSource(apiBase + '/local_doc_qa/local_doc_chat', {
+    fetchEventSource(getShareApiUrl(LOCAL_DOC_CHAT_PATH), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

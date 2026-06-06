@@ -1,11 +1,13 @@
 const apiBase = import.meta.env.VITE_APP_MODE === 'dev' ? '' : import.meta.env.VITE_APP_API_HOST || '';
 
 // Share page is constrained to exactly these two backend APIs.
-export const GET_BOT_INFO_PATH = '/local_doc_qa/get_bot_info';
-export const LOCAL_DOC_CHAT_PATH = '/local_doc_qa/local_doc_chat';
+export const GET_BOT_INFO_PATH = '/share/local_doc_qa/get_bot_info';
+export const LOCAL_DOC_CHAT_PATH = '/share/local_doc_qa/local_doc_chat';
+
+export const getShareApiUrl = (path: string) => `${apiBase}${path}`;
 
 const postJson = async (path: string, body: Record<string, any>, option: RequestInit = {}) => {
-  const res = await fetch(`${apiBase}${path}`, {
+  const res = await fetch(getShareApiUrl(path), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
