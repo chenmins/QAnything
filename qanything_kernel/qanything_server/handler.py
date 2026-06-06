@@ -76,12 +76,17 @@ async def new_knowledge_base(req: request):
     kb_id = safe_get(req, 'kb_id', default_kb_id)
     kb_id = correct_kb_id(kb_id)
 
+    is_faq = safe_get(req, 'is_faq', False)
+    if is_faq:
+        kb_id += "_FAQ"
+
     is_quick = safe_get(req, 'quick', False)
     if is_quick:
         kb_id += "_QUICK"
 
     if kb_id[:2] != 'KB':
         return sanic_json({"code": 2001, "msg": "fail, kb_id must start with 'KB'"})
+
     not_exist_kb_ids = local_doc_qa.milvus_summary.check_kb_exist(user_id, [kb_id])
     if not not_exist_kb_ids:
         return sanic_json({"code": 2001, "msg": "fail, knowledge Base {} already exist".format(kb_id)})
@@ -288,6 +293,8 @@ async def upload_faqs(req: request):
     debug_logger.info("upload_faqs %s", user_id)
     debug_logger.info("user_info %s", user_info)
     kb_id = safe_get(req, 'kb_id')
+    if kb_id.endswith("_FAQ_FAQ"):
+        kb_id = kb_id[:-4]
     kb_id = correct_kb_id(kb_id)
     debug_logger.info("kb_id %s", kb_id)
     faqs = safe_get(req, 'faqs')
@@ -394,6 +401,8 @@ async def list_docs(req: request):
     user_id = user_id + '__' + user_info
     debug_logger.info("list_docs %s", user_id)
     kb_id = safe_get(req, 'kb_id')
+    if kb_id.endswith("_FAQ_FAQ"):
+        kb_id = kb_id[:-4]
     kb_id = correct_kb_id(kb_id)
     debug_logger.info("kb_id: {}".format(kb_id))
     file_id = safe_get(req, 'file_id')
@@ -1248,16 +1257,22 @@ async def get_bot_info(req: request):
     local_doc_qa: LocalDocQA = req.app.ctx.local_doc_qa
     user_id = safe_get(req, 'user_id')
     user_info = safe_get(req, 'user_info', "1234")
-    passed, msg = check_user_id_and_user_info(user_id, user_info)
-    if not passed:
-        return sanic_json({"code": 2001, "msg": msg})
+    # passed, msg = check_user_id_and_user_info(user_id, user_info)
+    # if not passed:
+    #     return sanic_json({"code": 2001, "msg": msg})
     user_id = user_id + '__' + user_info
     bot_id = safe_get(req, 'bot_id')
     if bot_id:
         if not local_doc_qa.milvus_summary.check_bot_is_exist(bot_id):
             return sanic_json({"code": 2003, "msg": "fail, Bot {} not found".format(bot_id)})
     debug_logger.info("get_bot_info %s", user_id)
-    bot_infos = local_doc_qa.milvus_summary.get_bot(user_id, bot_id)
+    # 判断是否是共享用户
+    if safe_get(req, 'user_id') == "share" and safe_get(req, 'user_info', "1234") == "share":
+        debug_logger.info("共享的 get_bot_info 为 bot_id: %s", bot_id)
+        bot_infos = local_doc_qa.milvus_summary.get_bot(None, bot_id)
+    else:
+        bot_infos = local_doc_qa.milvus_summary.get_bot(user_id, bot_id)
+
     data = []
     for bot_info in bot_infos:
         if bot_info[6] != "":

@@ -44,7 +44,8 @@ app.config.REQUEST_MAX_SIZE = 128 * 1024 * 1024
 
 # 将 /qanything 路径映射到 ./dist/qanything 文件夹，并指定路由名称
 app.static('/qanything/web/', 'qanything_kernel/qanything_server/dist/qanything/', name='qanything', index="index.html")
-
+#/qanything/bots-only
+#app.static('/qanything/bots-only/', 'qanything_kernel/qanything_server/dist/bots-only/', name='qanythingbot', index="index.html")
 
 @app.before_server_start
 async def init_local_doc_qa(app, loop):
@@ -77,6 +78,10 @@ app.add_route(upload_weblink, "/qanything/api/local_doc_qa/upload_weblink", meth
 app.add_route(upload_files, "/qanything/api/local_doc_qa/upload_files", methods=['POST'])  # tags=["上传文件"]
 app.add_route(upload_faqs, "/qanything/api/local_doc_qa/upload_faqs", methods=['POST'])  # tags=["上传FAQ"]
 app.add_route(local_doc_chat, "/qanything/api/local_doc_qa/local_doc_chat", methods=['POST'])  # tags=["问答接口"] 
+
+
+app.add_route(local_doc_chat, "/qanything/api/share/local_doc_qa/local_doc_chat", methods=['POST'] ,name="share_local_doc_chat")  # tags=["问答接口"] 
+
 app.add_route(list_kbs, "/qanything/api/local_doc_qa/list_knowledge_base", methods=['POST'])  # tags=["知识库列表"] 
 app.add_route(list_docs, "/qanything/api/local_doc_qa/list_files", methods=['POST'])  # tags=["文件列表"]
 app.add_route(get_total_status, "/qanything/api/local_doc_qa/get_total_status", methods=['POST'])  # tags=["获取所有知识库状态数据库"]
@@ -96,6 +101,9 @@ app.add_route(new_bot, "/qanything/api/local_doc_qa/new_bot", methods=['POST']) 
 app.add_route(delete_bot, "/qanything/api/local_doc_qa/delete_bot", methods=['POST'])  # tags=["删除Bot"]
 app.add_route(update_bot, "/qanything/api/local_doc_qa/update_bot", methods=['POST'])  # tags=["更新Bot"]
 app.add_route(get_bot_info, "/qanything/api/local_doc_qa/get_bot_info", methods=['POST'])  # tags=["获取Bot信息"]
+
+app.add_route(get_bot_info, "/qanything/api/share/local_doc_qa/get_bot_info", methods=['POST'],name="share_get_bot_info")  # tags=["获取Bot信息"] 
+
 app.add_route(update_chunks, "/qanything/api/local_doc_qa/update_chunks", methods=['POST'])  # tags=["更新chunk"]
 app.add_route(get_file_base64, "/qanything/api/local_doc_qa/get_file_base64", methods=['POST'])  # tags=["更新chunk"]
 
