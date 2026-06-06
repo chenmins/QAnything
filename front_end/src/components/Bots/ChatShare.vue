@@ -213,7 +213,6 @@ import SvgIcon from '../SvgIcon.vue';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { useBotsChat } from '@/store/useBotsChat';
 import { useChat } from '@/store/useChat';
-import { useChatSource } from '@/store/useChatSource';
 import { Typewriter } from '@/utils/typewriter';
 import DefaultModal from '../DefaultModal.vue';
 import html2canvas from 'html2canvas';
@@ -252,9 +251,7 @@ const typewriter = new Typewriter((str: string) => {
 });
 
 const { QA_List } = storeToRefs(useBotsChat());
-
 const { copy } = useClipboard();
-const { setChatSourceVisible, setSourceType, setSourceUrl, setTextContent } = useChatSource();
 const { language } = storeToRefs(useLanguage());
 const { userInfo } = useUser();
 declare module _czc {
@@ -666,95 +663,6 @@ const confirm = async () => {
   showModal.value = false;
 };
 
-// 检查信息来源的文件是否支持窗口化渲染
-let supportSourceTypes = [
-  'md',
-  'txt',
-  'pdf',
-  'jpg',
-  'png',
-  'jpeg',
-  'doc',
-  'docx',
-  'xls',
-  'xlsx',
-  'ppt',
-  'pptx',
-  'jsonl',
-  'csv',
-  'eml',
-];
-const checkFileType = filename => {
-  if (!filename) {
-    return false;
-  }
-  const arr = filename.split('.');
-  if (arr.length) {
-    const suffix = arr.pop();
-    if (supportSourceTypes.includes(suffix)) {
-      return true;
-    } else {
-      return false;
-    }
-  } else {
-    return false;
-  }
-};
-
-const handleChatSource = file => {
-  console.log('handleChatSource', file);
-  const isSupport = checkFileType(file.file_name);
-  if (isSupport) {
-    queryFile(file);
-  }
-};
-
-async function queryFile(file) {
-  try {
-    setSourceUrl(null);
-    const res: any = await resultControl(await urlResquest.getFile({ file_id: file.file_id }));
-    console.log('queryFile', res);
-    const suffix = file.file_name.split('.').pop();
-    const b64Type = getB64Type(suffix);
-    console.log('b64Type', b64Type);
-    setSourceType(suffix);
-    setSourceUrl(`data:${b64Type};base64,${res.file_base64}`);
-    if (suffix === 'txt' || suffix === 'md' || suffix === 'csv' || suffix === 'eml') {
-      const decodedTxt = atob(res.file_base64);
-      const correctStr = decodeURIComponent(escape(decodedTxt));
-      console.log('decodedTxt', correctStr);
-      setTextContent(correctStr);
-      setChatSourceVisible(true);
-    } else {
-      setChatSourceVisible(true);
-    }
-  } catch (e) {
-    message.error(e.msg || '获取文件失败');
-  }
-}
-
-let b64Types = [
-  'text/markdown', // md
-  'text/plain', // txt
-  'application/pdf', // pdf
-  'image/jpeg', // jpg
-  'image/png', // png
-  'image/jpeg', // jpeg
-  'application/msword', // doc
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
-  'application/vnd.ms-excel', // xls
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
-  'application/vnd.ms-powerpoint', // ppt
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation', // pptx
-  'application/jsonl', // jsonl
-  'text/csv', // csv
-  'message/rfc822', // eml
-];
-
-function getB64Type(suffix) {
-  const index = supportSourceTypes.indexOf(suffix);
-  return b64Types[index];
-}
 const deviceType = ref('');
 if (
   /android|iphone|phone|ipad|ipod|windows phone|blackberry|iemobile|opera mini/i.test(
