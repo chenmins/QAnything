@@ -52,7 +52,7 @@ const getBotInfo = async botId => {
     console.log('zj-botId', botId);
     const res: any = await resultControl(await getShareBotInfo(botId));
     botInfo.value = res[0];
-    document.title = `Qanything-${res[0].bot_name}`;
+    document.title = `${res[0].bot_name}`;
     isLoading.value = false;
   } catch (e) {
     message.error(e.msg || '获取Bot信息失败');

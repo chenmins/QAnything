@@ -1,4 +1,4 @@
-const apiBase = import.meta.env.VITE_APP_MODE === 'dev' ? '' : import.meta.env.VITE_APP_API_HOST || '';
+const apiBase = import.meta.env.VITE_APP_MODE === 'dev' ? '/qanything/api' : import.meta.env.VITE_APP_API_HOST || '';
 
 // Share page is constrained to exactly these two backend APIs.
 export const GET_BOT_INFO_PATH = '/share/local_doc_qa/get_bot_info';

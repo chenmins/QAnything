@@ -2,8 +2,13 @@
   <a-config-provider :theme="{ token: { colorPrimary: '#1566ef' } }">
     <div class="bots-chat-container">
       <div class="header">
-        <img src="@/assets/bots/bot-avatar.png" alt="avatar" />
-        {{ botInfo.bot_name }}
+        <div class="header-content">
+          <div class="header-icon"></div>
+          <div>
+            <div class="header-title">{{ botInfo.bot_name }}</div>
+            <div class="header-subtitle">咨询您关心的生态环境的法律法规和标准规范</div>
+          </div>
+        </div>
       </div>
       <div class="my-page">
         <div id="chat" ref="chatContainer" class="chat showSider">
@@ -803,21 +808,41 @@ $avatar-width: 96px;
 
 .header {
   width: 100%;
-  padding: 0.25rem 0;
-  font-size: 14px;
-  font-weight: 500;
-  color: #222222;
-  border-top-right-radius: 12px;
-  border-top-left-radius: 12px;
+  height: 4.125rem;
+  padding: 0 0 0 1.25rem;
+  background: #F5F3FF;
+  border-top-right-radius: 0.625rem;
+  border-top-left-radius: 0.625rem;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   border-bottom: 1px solid #ededed;
 
-  img {
-    width: 32px;
-    height: 32px;
-    margin-right: 8px;
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .header-icon {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.625rem;
+      background: #8B5CF6;
+      flex-shrink: 0;
+    }
+  }
+
+  .header-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #222222;
+    line-height: 1.5;
+  }
+
+  .header-subtitle {
+    font-size: 11px;
+    color: #94A3B8;
+    line-height: 1.5;
   }
 }
 
