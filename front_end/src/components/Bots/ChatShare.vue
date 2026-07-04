@@ -851,7 +851,7 @@ $avatar-width: 96px;
   width: 100%;
   height: 100%;
   margin: 0 auto;
-  padding: 14px 14px 0 14px;
+  padding: 14px 7px 0 7px;
   //border-radius: 12px 0 0 0;
   //border-top-color: #1566EF;
   display: flex;
@@ -864,8 +864,7 @@ $avatar-width: 96px;
 .chat {
   margin: 0 auto;
   width: 100%;
-  max-width: 816px;
-  //min-width: 500px;
+  max-width: 1200px;
   padding: 28px 0 0 0;
   flex: 1;
   overflow-y: auto;
