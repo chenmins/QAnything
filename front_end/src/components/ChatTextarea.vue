@@ -279,11 +279,11 @@ watch(
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: center;
   background-color: #fff;
-  border: 1px solid #d9d9d9;
-  border-radius: 18px;
+  border: none;
+  border-radius: 0;
 
   &:hover {
     border-color: $baseColor;
@@ -343,6 +343,7 @@ watch(
   width: 100%;
   height: 40px;
   padding-right: 10px;
+  margin-top: auto;
   display: flex;
   justify-content: flex-end;
   align-items: center;

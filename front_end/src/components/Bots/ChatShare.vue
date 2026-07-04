@@ -851,9 +851,7 @@ $avatar-width: 96px;
   width: 100%;
   height: 100%;
   margin: 0 auto;
-  padding: 14px 7px 0 7px;
-  //border-radius: 12px 0 0 0;
-  //border-top-color: #1566EF;
+  padding: 0;
   display: flex;
   flex-direction: column;
   background: #f3f6fd;
@@ -864,8 +862,8 @@ $avatar-width: 96px;
 .chat {
   margin: 0 auto;
   width: 100%;
-  max-width: 1200px;
-  padding: 28px 0 0 0;
+  max-width: 100%;
+  padding: 28px 1.25rem 0;
   flex: 1;
   overflow-y: auto;
   box-sizing: border-box;
@@ -1093,17 +1091,25 @@ $avatar-width: 96px;
 
 .question-box {
   width: 100%;
-  margin: 32px 0;
+  height: 20%;
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-top: 1px solid #ededed;
+  flex-shrink: 0;
 
   .question {
     position: relative;
-    max-width: calc(816px - $avatar-width);
-    //width: 40%;
-    //min-width: 550px;
+    width: 100%;
+    max-width: 100%;
+    flex: 1;
     margin: 0 auto;
+    padding: 0.75rem 1.25rem;
     display: flex;
-    align-items: center;
+    align-items: stretch;
     box-sizing: border-box;
 
     :deep(.ant-input-affix-wrapper) {
