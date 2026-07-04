@@ -6,10 +6,11 @@
           <div class="header-icon"></div>
           <div style="min-width: 0; overflow: hidden">
             <div class="header-title">{{ botInfo.bot_name }}</div>
-            <div class="header-subtitle">咨询您关心的生态环境的法律法规和标准规范</div>
+            <div class="header-subtitle">欢迎咨询生态环境的法律法规与技术规范</div>
           </div>
         </div>
         <div class="header-actions">
+          <span class="action-label" style="font-size:11px;color:#94A3B8;margin-right:8px;">会话保存为图片</span>
           <a-popover placement="bottomRight" trigger="hover">
             <template #content>{{ common.chatToPic }}</template>
             <span
@@ -17,7 +18,7 @@
               @click="downloadChat"
               style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;"
             >
-              <SvgIcon name="chat-download" style="width: 20px; height: 20px;" />
+              <SvgIcon name="riFill-file-download" style="width: 24px; height: 24px; color: #8B5CF6;" />
             </span>
           </a-popover>
         </div>
