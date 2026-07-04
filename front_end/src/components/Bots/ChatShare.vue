@@ -4,10 +4,22 @@
       <div class="header">
         <div class="header-content">
           <div class="header-icon"></div>
-          <div>
+          <div style="min-width: 0; overflow: hidden">
             <div class="header-title">{{ botInfo.bot_name }}</div>
             <div class="header-subtitle">咨询您关心的生态环境的法律法规和标准规范</div>
           </div>
+        </div>
+        <div class="header-actions">
+          <a-popover placement="bottomRight" trigger="hover">
+            <template #content>{{ common.chatToPic }}</template>
+            <span
+              :class="['download', showLoading ? 'isPreventClick' : '']"
+              @click="downloadChat"
+              style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;"
+            >
+              <SvgIcon name="chat-download" style="width: 20px; height: 20px;" />
+            </span>
+          </a-popover>
         </div>
       </div>
       <div class="my-page">
@@ -131,15 +143,6 @@
               <span class="yuyin" @click="changeType('audio')">
                 <img src="@/assets/bots/yuyin.png" alt="" />
               </span>
-              <a-popover placement="topLeft" trigger="hover">
-                <template #content>{{ common.chatToPic }}</template>
-                <span
-                  :class="['download', showLoading ? 'isPreventClick' : '']"
-                  @click="downloadChat"
-                >
-                  <SvgIcon name="chat-download" />
-                </span>
-              </a-popover>
               <!-- <a-popover trigger="click">
                 <template #title>{{ common.contextLabel }}</template>
                 <template #content>
@@ -809,19 +812,23 @@ $avatar-width: 96px;
 .header {
   width: 100%;
   height: 4.125rem;
-  padding: 0 0 0 1.25rem;
+  padding: 0 20px;
   background: #F5F3FF;
   border-top-right-radius: 0.625rem;
   border-top-left-radius: 0.625rem;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   border-bottom: 1px solid #ededed;
+  box-sizing: border-box;
 
   .header-content {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
 
     .header-icon {
       width: 2rem;
@@ -830,19 +837,58 @@ $avatar-width: 96px;
       background: #8B5CF6;
       flex-shrink: 0;
     }
+
+    .header-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #222222;
+      line-height: 1.5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-subtitle {
+      font-size: 11px;
+      color: #94A3B8;
+      line-height: 1.5;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
-  .header-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: #222222;
-    line-height: 1.5;
-  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    margin-left: 12px;
 
-  .header-subtitle {
-    font-size: 11px;
-    color: #94A3B8;
-    line-height: 1.5;
+    .download {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+
+      svg {
+        width: 18px;
+        height: 18px;
+        color: #222222;
+      }
+
+      &:hover {
+        background: #ede9fe;
+      }
+    }
+
+    .isPreventClick {
+      cursor: not-allowed !important;
+      opacity: 0.5;
+    }
   }
 }
 
