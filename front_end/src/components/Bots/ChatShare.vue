@@ -3,7 +3,7 @@
     <div class="bots-chat-container">
       <div class="header">
         <div class="header-content">
-          <div class="header-icon"></div>
+          <div class="header-icon" :style="{ background: showYuyin ? 'linear-gradient(300deg, #0065f2 1%, #0065f2 97%)' : 'linear-gradient(300deg, #8b5cf6 1%, #8b5cf6 97%)' }"></div>
           <div style="min-width: 0; overflow: hidden">
             <div class="header-title">{{ botInfo.bot_name }}</div>
             <div class="header-subtitle">欢迎咨询生态环境的法律法规与技术规范</div>
@@ -18,7 +18,7 @@
               @click="downloadChat"
               style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;"
             >
-              <SvgIcon name="riFill-file-download" style="width: 24px; height: 24px; color: #8B5CF6;" />
+              <SvgIcon name="riFill-file-download" :style="{ width: '24px', height: '24px', color: showYuyin ? '#0065f2' : '#8b5cf6' }" />
             </span>
           </a-popover>
         </div>
@@ -112,7 +112,7 @@
           </a-button>
         </div>
 
-        <div v-show="sendType == 'audio'" class="yuyin-container">
+        <div v-show="sendType == 'audio'" v-if="showYuyin" class="yuyin-container">
           <img
             class="text-icon"
             src="@/assets/bots/jianpan.png"
@@ -139,9 +139,10 @@
               </p>
             </template>
           </div>
-          <div class="question">
+          
+          <div class="question" :style="{ '--send-btn-bg': showYuyin ? 'linear-gradient(300deg, #0065f2 1%, #0065f2 97%)' : 'linear-gradient(300deg, #8b5cf6 1%, #8b5cf6 97%)', '--send-btn-bg-disabled': showYuyin ? 'linear-gradient(300deg, #4a9bf5 1%, #4a9bf5 97%)' : 'linear-gradient(300deg, #a78bfa 1%, #a78bfa 97%)' }">
             <ChatTextarea v-model:input-value="question" :options="mentionOptions" @send="send">
-              <span class="yuyin" @click="changeType('audio')">
+              <span v-if="showYuyin" class="yuyin" @click="changeType('audio')">
                 <img src="@/assets/bots/yuyin.png" alt="" />
               </span>
               <!-- <a-popover trigger="click">
@@ -241,11 +242,15 @@ const props = defineProps({
   },
   botInfo: {
     type: Object as any,
-    default: () => {},
+    default: () => ({}),
   },
   virtualUserId: {
     type: String,
     default: 'user',
+  },
+  showYuyin: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -835,7 +840,7 @@ $avatar-width: 96px;
       width: 2rem;
       height: 2rem;
       border-radius: 0.625rem;
-      background: #8B5CF6;
+      background: linear-gradient(300deg, #8b5cf6 1%, #8b5cf6 97%);
       flex-shrink: 0;
     }
 
@@ -874,11 +879,11 @@ $avatar-width: 96px;
       width: 32px;
       height: 32px;
       border-radius: 8px;
+      background: transparent;
 
       svg {
         width: 18px;
         height: 18px;
-        color: #222222;
       }
 
       &:hover {
@@ -1218,7 +1223,7 @@ $avatar-width: 96px;
         font-size: 14px;
         border-radius: 18px;
       }
-    }
+  }
 
     .send-action {
       width: 100%;
@@ -1256,27 +1261,6 @@ $avatar-width: 96px;
           width: 18px;
           height: 18px;
         }
-      }
-
-      :deep(.ant-btn-primary) {
-        width: 36px;
-        height: 26px;
-        padding: 8px 10px 8px 8px;
-        border-radius: 18px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: linear-gradient(300deg, #4c84ff 1%, #4c84ff 97%);
-      }
-
-      :deep(.ant-btn-primary:disabled) {
-        //height: 36px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: linear-gradient(300deg, #4c84ff 1%, #94b3f8 97%);
-        color: #fff !important;
-        border-color: transparent !important;
       }
 
       svg {

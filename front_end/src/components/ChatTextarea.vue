@@ -358,7 +358,7 @@ watch(
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(300deg, #4c84ff 1%, #4c84ff 97%);
+    background: var(--send-btn-bg, linear-gradient(300deg, #4c84ff 1%, #4c84ff 97%));
   }
 
   :deep(.ant-btn-primary:disabled) {
@@ -366,7 +366,7 @@ watch(
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(300deg, #4c84ff 1%, #94b3f8 97%);
+    background: var(--send-btn-bg-disabled, linear-gradient(300deg, #4c84ff 1%, #94b3f8 97%));
     color: #fff !important;
     border-color: transparent !important;
   }

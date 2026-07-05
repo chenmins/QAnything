@@ -3,7 +3,7 @@
     <div v-if="isLoading" class="loading">
       <a-spin :indicator="indicator" />
     </div>
-    <ChatShare v-else :bot-info="botInfo" chat-type="share" />
+    <ChatShare v-else :bot-info="botInfo" chat-type="share" :show-yuyin="showYuyin" />
   </div>
 </template>
 <script lang="ts" setup>
@@ -20,6 +20,7 @@ const botInfo = ref(null);
 const botId = ref(null);
 const isLoading = ref(true);
 const userId = ref(null); // 原来用的是浏览器指纹，改成了user，所以这个暂时没用️
+const showYuyin = ref(false); // URL参数控制语音按钮显隐
 
 const indicator = h(LoadingOutlined, {
   style: {
@@ -63,6 +64,8 @@ async function init() {
   try {
     const route = getCurrentRoute();
     botId.value = route.value.params.botId;
+    // 从URL参数读取show_yuyin，控制语音按钮显隐
+    showYuyin.value = route.value.query.show_yuyin === '1' || route.value.query.show_yuyin === 'true';
     // 初始化FingerprintJS
     const fp = await FingerprintJS.load();
 
