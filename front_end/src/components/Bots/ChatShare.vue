@@ -27,7 +27,9 @@
         <div id="chat" ref="chatContainer" class="chat showSider">
           <ul id="chat-ul" ref="scrollDom">
             <li class="ai">
-              <img class="avatar" src="@/assets/home/ai-avatar.png" alt="头像" />
+              <span class="avatar robot-avatar">
+                <SvgIcon name="arcoDesign-robot" />
+              </span>
               <div class="ai-content">
                 <div class="ai-right">
                   <p class="question-text welcome" v-html="botInfo.welcome_message"></p>
@@ -40,7 +42,9 @@
                 <p class="question-text">{{ item.question }}</p>
               </div>
               <div v-else class="ai">
-                <img class="avatar" src="@/assets/home/ai-avatar.png" alt="头像" />
+                <span class="avatar robot-avatar">
+                  <SvgIcon name="arcoDesign-robot" />
+                </span>
                 <div class="ai-content">
                   <div class="ai-right">
                     <p
@@ -131,7 +135,7 @@
           </div>
         </div>
 
-        <div v-show="sendType == 'text'" class="question-box">
+        <div v-show="sendType == 'text'" class="question-box" :style="{ position: 'relative' }">
           <div v-if="chatSettingFormActive?.other?.contentArr?.length" class="other-chat-con">
             <template v-for="(itemC, indexC) in chatSettingFormActive?.other?.contentArr">
               <p v-if="itemC?.text" :key="indexC" @click="otherSend(itemC?.text)">
@@ -139,7 +143,13 @@
               </p>
             </template>
           </div>
-          
+          <div class="scroll-btn-div" @click="scrollBottom">
+            <img
+              class="avatar"
+              src="@/assets/home/scroll-down.png"
+              alt="滑到底部"
+            />
+          </div>
           <div class="question" :style="{ '--send-btn-bg': showYuyin ? 'linear-gradient(300deg, #0065f2 1%, #0065f2 97%)' : 'linear-gradient(300deg, #8b5cf6 1%, #8b5cf6 97%)', '--send-btn-bg-disabled': showYuyin ? 'linear-gradient(300deg, #4a9bf5 1%, #4a9bf5 97%)' : 'linear-gradient(300deg, #a78bfa 1%, #a78bfa 97%)' }">
             <ChatTextarea v-model:input-value="question" :options="mentionOptions" @send="send">
               <span v-if="showYuyin" class="yuyin" @click="changeType('audio')">
@@ -185,13 +195,11 @@
           <p>{{ bots.bindKbtoPreview }}</p>
         </div>
       </div>
-
-      <div class="scroll-btn-div">
+      <div class="scroll-btn-div" @click="scrollBottom" v-show="sendType == 'text'">
         <img
           class="avatar"
           src="@/assets/home/scroll-down.png"
           alt="滑到底部"
-          @click="scrollBottom"
         />
       </div>
     </div>
@@ -935,6 +943,21 @@ $avatar-width: 96px;
     margin-right: 16px;
   }
 
+  .robot-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #8b5cf6;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    svg {
+      width: 20px;
+      height: 20px;
+      color: #fff;
+    }
+  }
+
   .user {
     display: flex;
     flex-direction: row-reverse;
@@ -1273,9 +1296,15 @@ $avatar-width: 96px;
 
 .scroll-btn-div {
   position: absolute;
-  bottom: 120px;
+  bottom: 100%;
   right: 32px;
   cursor: pointer;
+  margin-bottom: 8px;
+
+  img {
+    width: 32px;
+    height: 32px;
+  }
 
   svg {
     width: 20px;
