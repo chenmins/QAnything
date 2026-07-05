@@ -6,7 +6,7 @@
           <div class="header-icon" :style="{ background: showYuyin ? 'linear-gradient(300deg, #0065f2 1%, #0065f2 97%)' : 'linear-gradient(300deg, #8b5cf6 1%, #8b5cf6 97%)' }"></div>
           <div style="min-width: 0; overflow: hidden">
             <div class="header-title">{{ botInfo.bot_name }}</div>
-            <div class="header-subtitle">欢迎咨询生态环境的法律法规与技术规范</div>
+            <div class="header-subtitle">欢迎咨询生态环境法律法规与技术规范</div>
           </div>
         </div>
         <div class="header-actions">
@@ -27,7 +27,8 @@
         <div id="chat" ref="chatContainer" class="chat showSider">
           <ul id="chat-ul" ref="scrollDom">
             <li class="ai">
-              <span class="avatar robot-avatar">
+              <img v-if="showYuyin" class="avatar" src="@/assets/home/ai-avatar.png" alt="头像" />
+              <span v-else class="avatar robot-avatar">
                 <SvgIcon name="arcoDesign-robot" />
               </span>
               <div class="ai-content">
@@ -42,7 +43,8 @@
                 <p class="question-text">{{ item.question }}</p>
               </div>
               <div v-else class="ai">
-                <span class="avatar robot-avatar">
+                <img v-if="showYuyin" class="avatar" src="@/assets/home/ai-avatar.png" alt="头像" />
+                <span v-else class="avatar robot-avatar">
                   <SvgIcon name="arcoDesign-robot" />
                 </span>
                 <div class="ai-content">
