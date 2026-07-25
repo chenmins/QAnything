@@ -16,6 +16,13 @@
       </div>
     </div>
     <div class="send-action">
+      <span
+        class="char-count"
+        :class="{
+          'char-count--warn': inputValue.length >= 200 && inputValue.length < 300,
+          'char-count--limit': inputValue.length >= 300,
+        }"
+      >{{ inputValue.length }}/300</span>
       <slot></slot>
     </div>
   </div>
@@ -52,6 +59,12 @@ const cursorPosition = ref(0);
 
 // 输入触发
 const inputHandle = (e: Event) => {
+  const newText = (e.target as HTMLDivElement).textContent || '';
+  if (newText.length > 300) {
+    (e.target as HTMLDivElement).textContent = newText.substring(0, 300);
+    resetCursorPosition(300);
+    return;
+  }
   emit('update:inputValue', (e.target as HTMLDivElement).textContent);
   nextTick(() => {
     // 初始化选中条目
@@ -349,6 +362,22 @@ watch(
   align-items: center;
   color: #000;
   z-index: 101;
+
+  .char-count {
+    font-size: 11px;
+    color: #94A3B8;
+    margin-right: 8px;
+    font-family: PingFang SC;
+    white-space: nowrap;
+
+    &--warn {
+      color: #e88b8b;
+    }
+
+    &--limit {
+      color: #e53e3e;
+    }
+  }
 
   :deep(.ant-btn-primary) {
     width: 36px;

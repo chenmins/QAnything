@@ -3,24 +3,25 @@
     <div class="bots-chat-container">
       <div class="header">
         <div class="header-content">
-          <div class="header-icon" :style="{ background: showYuyin ? 'linear-gradient(300deg, #0065f2 1%, #0065f2 97%)' : 'linear-gradient(300deg, #8b5cf6 1%, #8b5cf6 97%)' }"></div>
+          <div class="header-icon" :style="{ background: showYuyin ? 'linear-gradient(300deg, #0065f2 1%, #0065f2 97%)' : 'linear-gradient(300deg, #8b5cf6 1%, #8b5cf6 97%)' }">
+            <SvgIcon name="arcoDesign-robot" style="color: #fff; width: 20px; height: 20px;" />
+          </div>
           <div style="min-width: 0; overflow: hidden">
             <div class="header-title">{{ botInfo.bot_name }}</div>
-            <div class="header-subtitle">欢迎咨询生态环境法律法规与技术规范</div>
+            <div class="header-subtitle">咨询您关心的生态环境法律法规及标准规范</div>
           </div>
         </div>
         <div class="header-actions">
-          <span class="action-label" style="font-size:11px;color:#94A3B8;margin-right:8px;">会话保存为图片</span>
-          <a-popover placement="bottomRight" trigger="hover">
-            <template #content>{{ common.chatToPic }}</template>
-            <span
-              :class="['download', showLoading ? 'isPreventClick' : '']"
-              @click="downloadChat"
-              style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;"
-            >
-              <SvgIcon name="riFill-file-download" :style="{ width: '24px', height: '24px', color: showYuyin ? '#0065f2' : '#8b5cf6' }" />
-            </span>
-          </a-popover>
+          <span class="action-pill-btn" :class="{ 'isPreventClick': showLoading }" @click="downloadChat">
+            <SvgIcon name="riFill-file-download" :style="{ width: '12px', height: '12px' }" />
+            <span>保存记录</span>
+          </span>
+          <span class="back-home-btn" @click="goHome">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>返回概览</span>
+          </span>
         </div>
       </div>
       <div class="my-page">
@@ -29,7 +30,7 @@
             <li class="ai">
               <img v-if="showYuyin" class="avatar" src="@/assets/home/ai-avatar.png" alt="头像" />
               <span v-else class="avatar robot-avatar">
-                <SvgIcon name="arcoDesign-robot" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 26h1v1h-1v-1zM29 26h1v1h-1v-1z" fill="currentColor"/><path d="M24 7v6m0-6h5m-5 0h-5M3 21v11m42-11v11M9 13h30v27H9V13zm9 13h1v1h-1v-1zm11 0h1v1h-1v-1z"/></svg>
               </span>
               <div class="ai-content">
                 <div class="ai-right">
@@ -172,7 +173,7 @@
                   <SvgIcon name="chat-setting" />
                 </span>
               </a-popover> -->
-              <a-button type="primary" :disabled="showLoading" shape="circle" @click="send">
+              <a-button type="primary" :disabled="showLoading || !question.trim().length" shape="circle" @click="send">
                 <SvgIcon name="sendplane" />
               </a-button>
             </ChatTextarea>
@@ -650,6 +651,10 @@ const downloadChat = () => {
   content.value = common.saveTip;
 };
 
+const goHome = () => {
+  window.parent.postMessage({ action: 'CLOSE_QA_MODAL' }, '*');
+};
+
 const confirm = async () => {
   confirmLoading.value = true;
   if (type.value === 'download') {
@@ -852,6 +857,9 @@ $avatar-width: 96px;
       border-radius: 0.625rem;
       background: linear-gradient(300deg, #8b5cf6 1%, #8b5cf6 97%);
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .header-title {
@@ -880,30 +888,57 @@ $avatar-width: 96px;
     justify-content: flex-end;
     flex-shrink: 0;
     margin-left: 12px;
+    gap: 8px;
 
-    .download {
-      cursor: pointer;
+    .action-pill-btn {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: transparent;
-
-      svg {
-        width: 18px;
-        height: 18px;
-      }
+      gap: 6px;
+      padding: 4px 12px;
+      height: 28px;
+      font-size: 12px;
+      color: #8b5cf6;
+      background: #f3f0ff;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      font-family: PingFang SC;
+      line-height: 20px;
+      white-space: nowrap;
+      transition: background 0.25s ease;
+      user-select: none;
 
       &:hover {
-        background: #ede9fe;
+        background: #e4dcfc;
       }
     }
 
     .isPreventClick {
       cursor: not-allowed !important;
       opacity: 0.5;
+    }
+
+    .back-home-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      height: 28px;
+      font-size: 12px;
+      color: #8b5cf6;
+      background: #f3f0ff;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      font-family: PingFang SC;
+      line-height: 20px;
+      white-space: nowrap;
+      transition: background 0.25s ease;
+      user-select: none;
+
+      &:hover {
+        background: #e4dcfc;
+      }
     }
   }
 }
@@ -965,9 +1000,11 @@ $avatar-width: 96px;
     flex-direction: row-reverse;
     justify-content: flex-start;
     margin-bottom: 16px;
+    min-width: 0;
 
     .avatar {
       margin: 0 0 0 16px;
+      flex-shrink: 0;
     }
 
     .question-text {
@@ -980,6 +1017,9 @@ $avatar-width: 96px;
       background: #e1e7ff;
       border-radius: 12px;
       word-wrap: break-word;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      min-width: 0;
     }
   }
 
@@ -991,7 +1031,7 @@ $avatar-width: 96px;
       display: flex;
       flex-direction: column;
       padding-right: 48px;
-      min-width: 20%;
+      min-width: 0;
 
       .question-text {
         flex: 1;
@@ -1003,6 +1043,9 @@ $avatar-width: 96px;
         background: #fff;
         border-radius: 12px 12px 0 0;
         word-wrap: break-word;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        min-width: 0;
       }
 
       .welcome {
