@@ -316,7 +316,6 @@ const columns = [
     dataIndex: 'fileIdName',
     key: 'fileIdName',
     width: '12%',
-    ellipsis: true,
   },
   {
     title: home.documentTag,
