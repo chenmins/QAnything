@@ -137,7 +137,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     build: {
-      outDir: `dist/qanything`,
+      outDir: `dist/admin`,
       minify: 'terser',
       // terserOptions: {
       //   compress: {
