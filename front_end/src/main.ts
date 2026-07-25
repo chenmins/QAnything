@@ -27,7 +27,7 @@ if (userStr) {
     localStorage.setItem(
       'user',
       JSON.stringify({
-        userInfo: { token: '', phoneNumber: user_id || '13333323624' },
+        userInfo: { token: '', phoneNumber: user_id || '13333323623' },
         userPhoneDialogOpen: false,
       })
     );
@@ -44,7 +44,7 @@ if (userStr) {
   localStorage.setItem(
     'user',
     JSON.stringify({
-      userInfo: { token: '', phoneNumber: user_id || '13333323624' },
+      userInfo: { token: '', phoneNumber: user_id || '13333323623' },
       userPhoneDialogOpen: false,
     })
   );

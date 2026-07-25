@@ -30,12 +30,14 @@
 </template>
 <script lang="ts" setup>
 import { useBots } from '@/store/useBots';
+import { useChatSetting } from '@/store/useChatSetting';
 import urlResquest from '@/services/urlConfig';
 import { resultControl } from '@/utils/utils';
 import routeController from '@/controller/router';
 import { message } from 'ant-design-vue';
 import { LoadingOutlined } from '@ant-design/icons-vue';
 import { getLanguage } from '@/language/index';
+import { IChatSetting } from '@/utils/types';
 
 const { getCurrentRoute, changePage } = routeController();
 const { tabIndex, curBot } = storeToRefs(useBots());
@@ -63,6 +65,45 @@ const indicator = h(LoadingOutlined, {
   },
   spin: true,
 });
+
+const applyBotChatSetting = bot => {
+  if (!bot?.llm_setting) {
+    return;
+  }
+
+  try {
+    const setting = JSON.parse(bot.llm_setting);
+    const chatSetting: IChatSetting = {
+      modelType: '自定义模型配置',
+      modelName: setting.model || '',
+      apiKey: setting.api_key || '',
+      apiBase: setting.api_base || '',
+      apiModelName: setting.model || '',
+      apiContextLength: setting.api_context_length || 4096,
+      context: setting.other?.context || 0,
+      maxToken: setting.max_token || 512,
+      chunkSize: setting.chunk_size || 800,
+      temperature: setting.temperature ?? 0.5,
+      top_P: setting.top_p ?? 1,
+      top_K: setting.top_k ?? 30,
+      capabilities: {
+        onlySearch: setting.only_need_search_results || false,
+        mixedSearch: setting.hybrid_search || false,
+        networkSearch: setting.networking || false,
+        rerank: setting.rerank || false,
+      },
+      active: true,
+      other: {
+        contentArr: setting.other?.contentArr || [{ text: '', key: Math.random() }],
+        context: setting.other?.context || 0,
+      },
+    };
+
+    useChatSetting().setChatSettingConfigured(chatSetting);
+  } catch (error) {
+    console.error('解析机器人模型配置失败', error);
+  }
+};
 
 const getKbList = async kbIds => {
   try {
@@ -97,6 +138,7 @@ const getBotInfo = async botId => {
   try {
     const res: any = await resultControl(await urlResquest.queryBotInfo({ bot_id: botId }));
     setCurBot(res[0]);
+    applyBotChatSetting(res[0]);
     getKbList(res[0].kb_ids);
     isLoading.value = false;
   } catch (e) {
