@@ -12,6 +12,7 @@
     "cdn-test": "bash ./cicdn.sh test",
     "cdn-prod": "bash ./cicdn.sh prod",
     "auto": "node ./autoHandle/create.js",
+    "postinstall": "node ./scripts/fix-vue-office.cjs",
     "prebuild": "node writeVersion.js",
     "predev": "node writeVersion.js"
   },
